@@ -1,0 +1,297 @@
+[
+ {
+  "name": "Amazon",
+  "ats": "amazon",
+  "slug": "amazon"
+ },
+ {
+  "name": "Apiiro",
+  "ats": "greenhouse",
+  "slug": "apiiro"
+ },
+ {
+  "name": "Applied Materials",
+  "ats": "workday",
+  "slug": "amat.wd1/External"
+ },
+ {
+  "name": "AppsFlyer",
+  "ats": "greenhouse",
+  "slug": "appsflyer"
+ },
+ {
+  "name": "Armis",
+  "ats": "smartrecruiters",
+  "slug": "armis"
+ },
+ {
+  "name": "Axonius",
+  "ats": "greenhouse",
+  "slug": "axonius"
+ },
+ {
+  "name": "BeyondTrust Israel",
+  "ats": "greenhouse",
+  "slug": "beyondtrust"
+ },
+ {
+  "name": "Cato Networks",
+  "ats": "greenhouse",
+  "slug": "catonetworks"
+ },
+ {
+  "name": "Cisco",
+  "ats": "workday",
+  "slug": "cisco.wd5/Cisco_Careers"
+ },
+ {
+  "name": "Cloudflare Israel",
+  "ats": "greenhouse",
+  "slug": "cloudflare"
+ },
+ {
+  "name": "Cloudinary",
+  "ats": "lever",
+  "slug": "cloudinary"
+ },
+ {
+  "name": "CrowdStrike Israel",
+  "ats": "workday",
+  "slug": "crowdstrike.wd5/crowdstrikecareers"
+ },
+ {
+  "name": "Cymulate",
+  "ats": "greenhouse",
+  "slug": "cymulate"
+ },
+ {
+  "name": "Datadog Israel",
+  "ats": "greenhouse",
+  "slug": "datadog"
+ },
+ {
+  "name": "Descope",
+  "ats": "greenhouse",
+  "slug": "descope"
+ },
+ {
+  "name": "Elastic Israel",
+  "ats": "greenhouse",
+  "slug": "elastic"
+ },
+ {
+  "name": "F5 Networks Israel",
+  "ats": "workday",
+  "slug": "ffive.wd5/f5jobs"
+ },
+ {
+  "name": "Forter",
+  "ats": "greenhouse",
+  "slug": "forter"
+ },
+ {
+  "name": "GitLab Israel",
+  "ats": "greenhouse",
+  "slug": "gitlab"
+ },
+ {
+  "name": "Gong",
+  "ats": "greenhouse",
+  "slug": "gongio"
+ },
+ {
+  "name": "Guardz",
+  "ats": "greenhouse",
+  "slug": "guardz"
+ },
+ {
+  "name": "Intel Israel",
+  "ats": "workday",
+  "slug": "intel.wd1/External"
+ },
+ {
+  "name": "JFrog",
+  "ats": "greenhouse",
+  "slug": "jfrog"
+ },
+ {
+  "name": "Juniper Networks Israel",
+  "ats": "workday",
+  "slug": "hpe.wd5/Jobsathpe"
+ },
+ {
+  "name": "Kaltura",
+  "ats": "smartrecruiters",
+  "slug": "kalturainc"
+ },
+ {
+  "name": "KLA",
+  "ats": "workday",
+  "slug": "kla.wd1/Search"
+ },
+ {
+  "name": "Lemonade Israel",
+  "ats": "ashby",
+  "slug": "lemonade"
+ },
+ {
+  "name": "Marvell Israel",
+  "ats": "workday",
+  "slug": "marvell.wd1/MarvellCareers"
+ },
+ {
+  "name": "Medtronic",
+  "ats": "workday",
+  "slug": "medtronic.wd1/MedtronicCareers"
+ },
+ {
+  "name": "Melio",
+  "ats": "greenhouse",
+  "slug": "melio"
+ },
+ {
+  "name": "Mend.io (WhiteSource)",
+  "ats": "ashby",
+  "slug": "mend-io"
+ },
+ {
+  "name": "Micron",
+  "ats": "workday",
+  "slug": "micron.wd1/External"
+ },
+ {
+  "name": "MongoDB Israel",
+  "ats": "greenhouse",
+  "slug": "mongodb"
+ },
+ {
+  "name": "Motorola Solutions Israel",
+  "ats": "workday",
+  "slug": "motorolasolutions.wd5/Careers"
+ },
+ {
+  "name": "Nexar",
+  "ats": "smartrecruiters",
+  "slug": "nexarinc"
+ },
+ {
+  "name": "NICE Systems",
+  "ats": "greenhouse",
+  "slug": "nice"
+ },
+ {
+  "name": "NVIDIA Israel (Mellanox)",
+  "ats": "workday",
+  "slug": "nvidia.wd5/NVIDIAExternalCareerSite"
+ },
+ {
+  "name": "Okta Israel",
+  "ats": "greenhouse",
+  "slug": "okta"
+ },
+ {
+  "name": "Optimove",
+  "ats": "greenhouse",
+  "slug": "optimove"
+ },
+ {
+  "name": "Orca Security",
+  "ats": "greenhouse",
+  "slug": "orcasecurity"
+ },
+ {
+  "name": "Palo Alto Networks Israel",
+  "ats": "workday",
+  "slug": "paloaltonetworks.wd5/panwexternalcareers"
+ },
+ {
+  "name": "Payoneer",
+  "ats": "greenhouse",
+  "slug": "payoneer"
+ },
+ {
+  "name": "Pendo Israel",
+  "ats": "greenhouse",
+  "slug": "pendo"
+ },
+ {
+  "name": "Perion Network",
+  "ats": "greenhouse",
+  "slug": "perionnetworkltd"
+ },
+ {
+  "name": "Philips",
+  "ats": "workday",
+  "slug": "philips.wd3/jobs-and-careers"
+ },
+ {
+  "name": "Prometheus / Grafana Israel",
+  "ats": "greenhouse",
+  "slug": "grafanalabs"
+ },
+ {
+  "name": "Riskified",
+  "ats": "greenhouse",
+  "slug": "riskified"
+ },
+ {
+  "name": "Salesforce",
+  "ats": "workday",
+  "slug": "salesforce.wd12/External_Career_Site"
+ },
+ {
+  "name": "SimilarWeb",
+  "ats": "greenhouse",
+  "slug": "similarweb"
+ },
+ {
+  "name": "Sisense",
+  "ats": "ashby",
+  "slug": "sisense"
+ },
+ {
+  "name": "Taboola",
+  "ats": "greenhouse",
+  "slug": "taboola"
+ },
+ {
+  "name": "Tenable Israel",
+  "ats": "greenhouse",
+  "slug": "tenableinc"
+ },
+ {
+  "name": "Thales",
+  "ats": "workday",
+  "slug": "thales.wd3/Careers"
+ },
+ {
+  "name": "Tipalti",
+  "ats": "greenhouse",
+  "slug": "tipaltisolutions"
+ },
+ {
+  "name": "Torque (env0)",
+  "ats": "greenhouse",
+  "slug": "torq"
+ },
+ {
+  "name": "Transmit Security Israel",
+  "ats": "greenhouse",
+  "slug": "transmitsecurity"
+ },
+ {
+  "name": "WalkMe",
+  "ats": "lever",
+  "slug": "walkme"
+ },
+ {
+  "name": "Wiz Israel",
+  "ats": "greenhouse",
+  "slug": "wizinc"
+ },
+ {
+  "name": "Workday",
+  "ats": "workday",
+  "slug": "workday.wd5/Workday"
+ }
+]

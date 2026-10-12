@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>Job Radar</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="top">
+    <div>
+      <h1>Job Radar</h1>
+      <p id="status" class="muted">טוען משרות…</p>
+    </div>
+    <div class="top-actions">
+      <button id="open-applied" class="btn only-narrow">הגשתי (<span id="applied-count-top">0</span>)</button>
+      <button id="open-settings" class="btn">⚙ חיבור</button>
+    </div>
+  </header>
+
+  <div class="layout">
+    <main>
+      <section class="panel controls">
+        <input id="search" type="search" placeholder="חיפוש לפי תפקיד, חברה או עיר…" autocomplete="off">
+
+        <div class="filter">
+          <span class="filter-label">תחום</span>
+          <div id="category-chips" class="chips"></div>
+        </div>
+        <div class="filter">
+          <span class="filter-label">ניסיון</span>
+          <div id="level-chips" class="chips"></div>
+        </div>
+
+        <div class="row">
+          <label class="check"><input id="only-new" type="checkbox"> רק חדשות (3 ימים אחרונים)</label>
+          <label class="check"><input id="show-seen" type="checkbox"> הצג גם משרות שהסתרתי</label>
+          <select id="sort">
+            <option value="new">החדשות קודם</option>
+            <option value="company">לפי חברה</option>
+          </select>
+          <button id="clear-filters" class="btn link">נקה סינון</button>
+        </div>
+      </section>
+
+      <section class="panel add-company">
+        <form id="company-form">
+          <label for="company-name">חיפוש נקודתי בחברה</label>
+          <div class="row">
+            <input id="company-name" type="text" placeholder="שם החברה, למשל Wiz" required autocomplete="off">
+            <input id="company-url" type="url" placeholder="קישור לדף הקריירה (לא חובה)" autocomplete="off">
+            <button class="btn primary" type="submit">חפש</button>
+          </div>
+        </form>
+        <p id="company-result" class="muted" hidden></p>
+        <ul id="requests" class="requests"></ul>
+      </section>
+
+      <p id="result-count" class="muted"></p>
+      <div id="jobs" class="jobs"></div>
+      <div id="sentinel"></div>
+    </main>
+
+    <aside id="side" class="side">
+      <div class="side-head">
+        <div class="tabs">
+          <button class="tab active" data-tab="applied">הגשתי (<span id="applied-count">0</span>)</button>
+          <button class="tab" data-tab="seen">הסתרתי (<span id="seen-count">0</span>)</button>
+        </div>
+        <button id="close-side" class="btn link only-narrow">סגור</button>
+      </div>
+      <ul id="side-list" class="side-list"></ul>
+    </aside>
+  </div>
+
+  <dialog id="settings">
+    <form method="dialog">
+      <h2>חיבור ל-GitHub</h2>
+      <p class="muted">
+        בלי חיבור, הסימונים נשמרים רק בדפדפן הזה. עם טוקן אישי הם נשמרים בריפו הפרטי שלך
+        ומסתנכרנים בין כל המכשירים, ואפשר גם להוסיף חברות לחיפוש הקבוע.
+      </p>
+      <label for="token">טוקן אישי (Fine-grained)</label>
+      <input id="token" type="password" placeholder="github_pat_…" autocomplete="off" dir="ltr">
+      <p id="settings-status" class="muted"></p>
+      <div class="row end">
+        <button id="disconnect" class="btn link" type="button">נתק</button>
+        <button class="btn" value="cancel">ביטול</button>
+        <button id="save-token" class="btn primary" type="button">שמור והתחבר</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>
