@@ -1,7 +1,11 @@
 [
  {
   "name": "Paloaltonetworks",
-  "status": "pending",
-  "requestedAt": "2026-10-12T09:57:58.649Z"
+  "status": "found",
+  "requestedAt": "2026-10-12T09:57:58.649Z",
+  "checkedAt": "2026-10-12T09:58:05.968Z",
+  "israel": 2,
+  "relevant": 0,
+  "board": "workday/paloaltonetworks.wd5/panwexternalcareers"
  }
 ]
