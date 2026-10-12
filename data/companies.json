@@ -40,6 +40,12 @@
   "token": "5D51D29347D2EA828D3347DBAA2EA85D522FE"
  },
  {
+  "name": "Adaptive6",
+  "ats": "comeet",
+  "slug": "AA.000",
+  "token": "AA04A6035205FA0154015401FE0003FC0"
+ },
+ {
   "name": "Addressable",
   "ats": "comeet",
   "slug": "8A.00C",
@@ -89,6 +95,11 @@
   "ats": "comeet",
   "slug": "88.003",
   "token": "88333123B95110644188833B9519894C9B4418"
+ },
+ {
+  "name": "Altera",
+  "ats": "workday",
+  "slug": "altera.wd1/Altera"
  },
  {
   "name": "Alvarion Technologies",
@@ -207,6 +218,11 @@
   "slug": "beach-bum"
  },
  {
+  "name": "BeamUP",
+  "ats": "greenhouse",
+  "slug": "beamup"
+ },
+ {
   "name": "BeyondTrust",
   "ats": "greenhouse",
   "slug": "beyondtrust"
@@ -234,6 +250,12 @@
   "token": "5A01C2032A05A0B40010E0168027605A0"
  },
  {
+  "name": "Blockaid",
+  "ats": "comeet",
+  "slug": "69.00B",
+  "token": "96B41ED041ED12D654C3388241ED12D654C3"
+ },
+ {
   "name": "Bond Sports",
   "ats": "comeet",
   "slug": "F7.009",
@@ -251,6 +273,11 @@
   "slug": "candex"
  },
  {
+  "name": "Canditech",
+  "ats": "smartrecruiters",
+  "slug": "canditech"
+ },
+ {
   "name": "Capitolis",
   "ats": "greenhouse",
   "slug": "capitolis"
@@ -265,6 +292,11 @@
   "ats": "comeet",
   "slug": "D3.003",
   "token": "3D3131FF4C01AC57A61AC51E98131FF4C"
+ },
+ {
+  "name": "Chainalysis",
+  "ats": "ashby",
+  "slug": "chainalysis-careers"
  },
  {
   "name": "Chamelio",
@@ -318,6 +350,12 @@
   "name": "ControlUp",
   "ats": "lever",
   "slug": "controlup"
+ },
+ {
+  "name": "Cross River",
+  "ats": "comeet",
+  "slug": "C7.00F",
+  "token": "7CF2EDA1F3C270B1F3CF9E4647270B4647270B"
  },
  {
   "name": "CrowdStrike",
@@ -401,6 +439,12 @@
   "ats": "comeet",
   "slug": "72.006",
   "token": "2769D81626762C4E762762C4EC4E1626"
+ },
+ {
+  "name": "Dual Bird Technologies",
+  "ats": "comeet",
+  "slug": "2B.00C",
+  "token": "B2C4E344E3459602184648C5960648C648C4308"
  },
  {
   "name": "Duda",
@@ -520,6 +564,12 @@
   "slug": "grafanalabs"
  },
  {
+  "name": "Grain",
+  "ats": "comeet",
+  "slug": "4A.000",
+  "token": "A4047C0290005C4014803340A401EC05C40"
+ },
+ {
   "name": "GrowthSpace",
   "ats": "comeet",
   "slug": "D7.00A",
@@ -573,6 +623,12 @@
   "name": "HUMAN",
   "ats": "ashby",
   "slug": "human"
+ },
+ {
+  "name": "Hypernative Labs",
+  "ats": "comeet",
+  "slug": "8A.00E",
+  "token": "A8E49E234C634C62A385EFE49E22A38A8E151C"
  },
  {
   "name": "Imagen",
@@ -650,6 +706,11 @@
   "slug": "jfrog"
  },
  {
+  "name": "Jiga",
+  "ats": "ashby",
+  "slug": "jiga"
+ },
+ {
   "name": "Justt",
   "ats": "comeet",
   "slug": "36.001",
@@ -683,6 +744,17 @@
   "token": "7982D901E6079816C8445816C82D9016C8F30"
  },
  {
+  "name": "Lasso Security",
+  "ats": "comeet",
+  "slug": "F9.008",
+  "token": "9F845C81DE813F045C84FC031D845C89F89F8"
+ },
+ {
+  "name": "Ledge Tech",
+  "ats": "ashby",
+  "slug": "ledge"
+ },
+ {
   "name": "Legit Security",
   "ats": "comeet",
   "slug": "37.004",
@@ -699,10 +771,21 @@
   "slug": "lightrun"
  },
  {
+  "name": "Linx Security",
+  "ats": "comeet",
+  "slug": "99.00C",
+  "token": "99C434499C300C300C99C300C133839A84CE0"
+ },
+ {
   "name": "LiveU",
   "ats": "comeet",
   "slug": "90.00C",
   "token": "9C2709C1D43A827030C3A82709C"
+ },
+ {
+  "name": "Loora",
+  "ats": "ashby",
+  "slug": "loora"
  },
  {
   "name": "Loox",
@@ -717,6 +800,11 @@
   "token": "1AC6B0A08F0C6B085C85CD60F0C1AC"
  },
  {
+  "name": "Lumentum",
+  "ats": "workday",
+  "slug": "lumentum.wd5/LITE"
+ },
+ {
   "name": "Lumus",
   "ats": "comeet",
   "slug": "62.00F",
@@ -726,6 +814,12 @@
   "name": "Marvell",
   "ats": "workday",
   "slug": "marvell.wd1/MarvellCareers"
+ },
+ {
+  "name": "Maytronics",
+  "ats": "comeet",
+  "slug": "E3.008",
+  "token": "3E81388FA0BB83E8FA0BB813881F401B58"
  },
  {
   "name": "Medtronic",
@@ -808,6 +902,12 @@
   "slug": "myheritage"
  },
  {
+  "name": "Nagomi Security",
+  "ats": "comeet",
+  "slug": "89.00B",
+  "token": "98B42CD98B98B4C5855E3262C262C262C3942"
+ },
+ {
   "name": "Nanit",
   "ats": "greenhouse",
   "slug": "nanit"
@@ -833,6 +933,12 @@
   "name": "Nebius",
   "ats": "greenhouse",
   "slug": "nebius"
+ },
+ {
+  "name": "NewCore",
+  "ats": "comeet",
+  "slug": "4B.00D",
+  "token": "B4D4F1B5A6843CE2D3421E743CE5A68B4D43CE"
  },
  {
   "name": "Nexar",
@@ -960,6 +1066,11 @@
   "slug": "perionnetworkltd"
  },
  {
+  "name": "PhaseV",
+  "ats": "greenhouse",
+  "slug": "phasev"
+ },
+ {
   "name": "Philips",
   "ats": "workday",
   "slug": "philips.wd3/jobs-and-careers"
@@ -988,6 +1099,11 @@
   "token": "1AF6BCA1AF27A1A35E86B6BC50D0"
  },
  {
+  "name": "Pointfive",
+  "ats": "ashby",
+  "slug": "pointfive"
+ },
+ {
   "name": "Primis",
   "ats": "comeet",
   "slug": "33.00C",
@@ -1006,9 +1122,26 @@
   "token": "5DE23340029121D562912029122334"
  },
  {
+  "name": "PTC",
+  "ats": "workday",
+  "slug": "ptc.wd1/PTC"
+ },
+ {
+  "name": "Qedma Quantum Computing",
+  "ats": "comeet",
+  "slug": "7A.006",
+  "token": "A76493A344E14EC029D853B01F621F62A76"
+ },
+ {
   "name": "QuantHealth",
   "ats": "greenhouse",
   "slug": "quanthealth"
+ },
+ {
+  "name": "Quantum Art",
+  "ats": "comeet",
+  "slug": "1B.005",
+  "token": "B154D934D932C54B15427E3769427E0162A"
  },
  {
   "name": "Rapid Medical",
@@ -1075,6 +1208,11 @@
   "name": "ScaleOps",
   "ats": "greenhouse",
   "slug": "scaleops"
+ },
+ {
+  "name": "SeatPick",
+  "ats": "ashby",
+  "slug": "seatpick"
  },
  {
   "name": "Seemplicity",
@@ -1176,6 +1314,11 @@
   "slug": "sweetsecurity"
  },
  {
+  "name": "Swish.ai",
+  "ats": "greenhouse",
+  "slug": "unframe"
+ },
+ {
   "name": "TA9",
   "ats": "smartrecruiters",
   "slug": "ta9"
@@ -1195,6 +1338,11 @@
   "name": "Tenable",
   "ats": "greenhouse",
   "slug": "tenableinc"
+ },
+ {
+  "name": "Terrific",
+  "ats": "lever",
+  "slug": "terrific-innovation"
  },
  {
   "name": "Thales",
@@ -1223,6 +1371,11 @@
   "ats": "comeet",
   "slug": "46.00D",
   "token": "64D25CE64D12E719343268C9A0C9A38B5"
+ },
+ {
+  "name": "Token Security",
+  "ats": "greenhouse",
+  "slug": "tokensecurity"
  },
  {
   "name": "Tomorrow.io",
@@ -1272,6 +1425,12 @@
   "token": "4E3186F1D521D522235138C1D521D52EA9186F"
  },
  {
+  "name": "Utila",
+  "ats": "comeet",
+  "slug": "D9.00F",
+  "token": "9DF451913BE4EF84EF858D713BE4EF804EF8"
+ },
+ {
   "name": "Vectorious Medical Technologies",
   "ats": "comeet",
   "slug": "68.003",
@@ -1297,6 +1456,11 @@
   "ats": "comeet",
   "slug": "04.002",
   "token": "402140A1008140A180C1008402C06804C06"
+ },
+ {
+  "name": "VIVID",
+  "ats": "ashby",
+  "slug": "vivid"
  },
  {
   "name": "Viz.ai",

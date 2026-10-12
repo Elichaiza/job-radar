@@ -84,7 +84,7 @@ function careerLinks(html, pageUrl) {
 }
 
 // Returns { company: {name, ats, slug}, israel, jobs } or null.
-export async function discover(name, careersUrl) {
+export async function discover(name, careersUrl, maxGuesses) {
   let best = null;
   const tryCompany = async (company) => {
     try {
@@ -107,7 +107,7 @@ export async function discover(name, careersUrl) {
     if (follow) queue.push(...careerLinks(html, url).map((link) => ({ url: link, follow: false })));
   }
   // 2. Otherwise guess the board name from the company name.
-  return findCompany(name, BROWSER_ATS);
+  return findCompany(name, BROWSER_ATS, maxGuesses);
 }
 
 async function readCompanies() {

@@ -247,8 +247,8 @@ export function slugCandidates(name) {
 // Looks for the company's board on the given job boards by guessing its name.
 // A guess only counts if the board has postings in Israel, which filters out
 // unrelated companies that happen to share the name.
-export async function findCompany(name, atsList = BROWSER_ATS) {
-  const attempts = slugCandidates(name).flatMap((slug) => atsList.map((ats) => ({ name, ats, slug })));
+export async function findCompany(name, atsList = BROWSER_ATS, maxGuesses = 12) {
+  const attempts = slugCandidates(name).slice(0, maxGuesses).flatMap((slug) => atsList.map((ats) => ({ name, ats, slug })));
   let best = null;
   await pool(attempts, 8, async (company) => {
     try {
