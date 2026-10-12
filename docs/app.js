@@ -233,7 +233,7 @@ function jobCard(job) {
   return el('article', { class: `job${seen ? ' seen' : ''}` },
     el('div', {},
       el('a', { class: 'job-title', href: safeUrl(job.url), target: '_blank', rel: 'noopener noreferrer', text: job.title }),
-      el('div', { class: 'job-meta', text: [job.company, job.location, ago(jobDate(job))].filter(Boolean).join(' · ') }),
+      el('div', { class: 'job-meta', text: [job.company, job.location, ago(jobDate(job)), job.source && `דרך ${job.source}`].filter(Boolean).join(' · ') }),
       el('div', { class: 'tags' },
         isNew(job) && el('span', { class: 'tag new', text: 'חדש' }),
         el('span', { class: 'tag', text: job.category }),
