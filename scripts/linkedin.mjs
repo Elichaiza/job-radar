@@ -4,7 +4,7 @@
 // are fetched only once: kept jobs are reused from the previous run and
 // rejected ones are remembered in data/linkedin-cache.json.
 
-import { classify, isSeniorTitle, isTechTitle, htmlToText } from '../docs/lib/classify.js';
+import { categorize, classify, isSeniorTitle, isTechTitle, htmlToText } from '../docs/lib/classify.js';
 
 const SEARCH = 'https://www.linkedin.com/jobs-guest/jobs/api/seeMoreJobPostings/search';
 const DETAIL = 'https://www.linkedin.com/jobs-guest/jobs/api/jobPosting';
@@ -19,13 +19,24 @@ const QUERIES = [
   ...['junior developer', 'junior engineer', 'student software', 'student developer', 'student engineer', 'graduate engineer',
     'intern software', 'entry level developer',
   ].map((keywords) => ({ keywords })),
+  // Embedded and low-level roles are rarely tagged entry level even when they
+  // are, so these go over every level, newest first.
+  ...['embedded software', 'embedded engineer', 'firmware', 'RTOS', 'real time software', 'linux kernel', 'device driver',
+    'BSP', 'low level', 'C++ developer', 'C developer', 'DSP', 'FPGA', 'chip design', 'system software', 'robotics software',
+    'IoT', 'communication software',
+  ].map((keywords) => ({ keywords, sortBy: 'DD' })),
+  // The week's newest postings of the widest searches, whatever level they are tagged.
+  ...['software engineer', 'software developer', 'backend developer', 'full stack developer', 'python developer',
+    'java developer', 'data engineer', 'QA engineer', 'automation engineer', 'devops engineer', 'algorithm engineer',
+    'machine learning engineer', 'security researcher', 'verification engineer', 'מפתח תוכנה', 'מהנדס תוכנה',
+  ].map((keywords) => ({ keywords, sortBy: 'DD', f_TPR: 'r604800' })),
 ];
 const MAX_PAGES = 25;
 const PAGE_SIZE = 10;
 const CACHE_DAYS = 45;
 // Reading a posting takes a few seconds once LinkedIn starts throttling, so a
 // run reads a bounded number of new ones and the next run continues.
-const MAX_NEW_PER_RUN = Number(process.env.LINKEDIN_MAX_NEW) || 300;
+const MAX_NEW_PER_RUN = Number(process.env.LINKEDIN_MAX_NEW) || 500;
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -64,7 +75,7 @@ function parseCards(html) {
 async function search(query) {
   const cards = [];
   for (let page = 0; page < MAX_PAGES; page++) {
-    const params = new URLSearchParams({ ...query, location: 'Israel', f_TPR: 'r2592000', start: String(page * PAGE_SIZE) });
+    const params = new URLSearchParams({ location: 'Israel', f_TPR: 'r2592000', ...query, start: String(page * PAGE_SIZE) });
     const html = await get(`${SEARCH}?${params}`);
     if (html == null) return { cards, failed: true };
     const found = parseCards(html);
@@ -92,7 +103,9 @@ export async function collectLinkedIn(previousJobs, cache = {}) {
   const now = new Date().toISOString();
   const jobs = [];
   let fetched = 0;
-  for (const card of cards.values()) {
+  // With a bounded number of reads per run, embedded postings go first.
+  const embeddedFirst = (card) => (categorize(card.title) === 'Embedded' ? 0 : 1);
+  for (const card of [...cards.values()].sort((a, b) => embeddedFirst(a) - embeddedFirst(b))) {
     const id = `linkedin:${card.id}`;
     if (previous.has(id)) { jobs.push(previous.get(id)); continue; }
     if (cache[card.id] || !isTechTitle(card.title) || isSeniorTitle(card.title)) continue;
