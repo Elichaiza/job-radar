@@ -41,6 +41,8 @@ const MAX_NEW_PER_RUN = Number(process.env.LINKEDIN_MAX_NEW) || 500;
 
 // The searches stop after this long, so a throttled run still finishes.
 const SEARCH_MINUTES = 40;
+// ...and reading new postings stops this long after the start.
+const TOTAL_MINUTES = 70;
 
 const sleep =(ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -97,7 +99,10 @@ async function companyQueries() {
   let ids;
   try { ids = JSON.parse(await readFile(new URL('../data/linkedin-companies.json', import.meta.url), 'utf8')); } catch { return []; }
   const groups = (list, size) => Array.from({ length: Math.ceil(list.length / size) }, (_, i) => list.slice(i * size, (i + 1) * size));
-  return [...groups(ids.big, 5), ...groups(ids.rest, 30)].map((group) => ({ f_C: group.join(','), sortBy: 'DD' }));
+  const queries = [...groups(ids.big, 5), ...groups(ids.rest, 30)].map((group) => ({ f_C: group.join(','), sortBy: 'DD' }));
+  // A run that is out of time stops part-way, so each run starts somewhere else.
+  const start = Math.floor(Math.random() * queries.length);
+  return [...queries.slice(start), ...queries.slice(0, start)];
 }
 
 // previousJobs: last run's jobs; cache: { [linkedin id]: ISO date it was rejected }.
@@ -107,7 +112,8 @@ export async function collectLinkedIn(previousJobs, cache = {}) {
   const previous = new Map(previousJobs.filter((j) => j.id.startsWith('linkedin:')).map((j) => [j.id, j]));
   const cards = new Map();
   let failedQueries = 0;
-  const deadline = Date.now() + SEARCH_MINUTES * 60000;
+  const started = Date.now();
+  const deadline = started + SEARCH_MINUTES * 60000;
   for (const query of [...QUERIES, ...await companyQueries()]) {
     // Out of time: whatever was not searched keeps its previous jobs.
     if (Date.now() > deadline) { failedQueries++; break; }
@@ -128,7 +134,8 @@ export async function collectLinkedIn(previousJobs, cache = {}) {
     if (previous.has(id)) { jobs.push(previous.get(id)); continue; }
     if (cache[card.id] || !isTechTitle(card.title) || isSeniorTitle(card.title)) continue;
 
-    const html = blocked || fetched >= MAX_NEW_PER_RUN ? null : await get(`${DETAIL}/${card.id}`);
+    const outOfTime = Date.now() > started + TOTAL_MINUTES * 60000;
+    const html = blocked || outOfTime || fetched >= MAX_NEW_PER_RUN ? null : await get(`${DETAIL}/${card.id}`);
     if (html == null) continue; // try again next run
     fetched++;
     const description = html.match(/show-more-less-html__markup[^>]*>([\s\S]*?)<\/div>/)?.[1] || '';
