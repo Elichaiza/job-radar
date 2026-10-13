@@ -18,6 +18,11 @@
   "token": "804301820104824281440201008402004020"
  },
  {
+  "name": "Abbott",
+  "ats": "workday",
+  "slug": "abbott.wd5/abbottcareers"
+ },
+ {
   "name": "Accenture",
   "ats": "workday",
   "slug": "accenture.wd103/AccentureCareers"
@@ -196,6 +201,11 @@
   "token": "7542BF815FC2BF8EA83AA024A42BF841F415FC"
  },
  {
+  "name": "Autodesk",
+  "ats": "workday",
+  "slug": "autodesk.wd1/Ext"
+ },
+ {
   "name": "Axonius",
   "ats": "greenhouse",
   "slug": "axonius"
@@ -268,6 +278,11 @@
   "token": "46615FE15FED321A6446601A64D322796"
  },
  {
+  "name": "Cadence",
+  "ats": "workday",
+  "slug": "cadence.wd1/External_Careers"
+ },
+ {
   "name": "Candex Technologies",
   "ats": "ashby",
   "slug": "candex"
@@ -319,6 +334,11 @@
   "name": "Cisco",
   "ats": "workday",
   "slug": "cisco.wd5/Cisco_Careers"
+ },
+ {
+  "name": "Citi",
+  "ats": "workday",
+  "slug": "citi.wd5/2"
  },
  {
   "name": "ClickHouse",
@@ -537,6 +557,11 @@
   "token": "452159A159A8A4CF61E3E229019EC26E21148"
  },
  {
+  "name": "General Motors",
+  "ats": "workday",
+  "slug": "generalmotors.wd5/Careers_GM"
+ },
+ {
   "name": "Gett",
   "ats": "comeet",
   "slug": "A0.002",
@@ -613,6 +638,11 @@
   "name": "Houzz",
   "ats": "lever",
   "slug": "houzz"
+ },
+ {
+  "name": "HP",
+  "ats": "workday",
+  "slug": "hp.wd5/ExternalCareerSite"
  },
  {
   "name": "HPE (Juniper)",
@@ -709,6 +739,11 @@
   "name": "Jiga",
   "ats": "ashby",
   "slug": "jiga"
+ },
+ {
+  "name": "Johnson & Johnson",
+  "ats": "workday",
+  "slug": "jj.wd5/JJ"
  },
  {
   "name": "Justt",
@@ -843,6 +878,11 @@
   "slug": "mend-io"
  },
  {
+  "name": "Microchip",
+  "ats": "workday",
+  "slug": "microchiphr.wd5/External"
+ },
+ {
   "name": "Micron",
   "ats": "workday",
   "slug": "micron.wd1/External"
@@ -973,9 +1013,20 @@
   "slug": "novartis.wd3/Internal_Careers_for_Acquired_Entities"
  },
  {
+  "name": "Nuvoton",
+  "ats": "comeet",
+  "slug": "51.00F",
+  "token": "15F57C6DB15FAF8C5757CAF841D6DB"
+ },
+ {
   "name": "NVIDIA",
   "ats": "workday",
   "slug": "nvidia.wd5/NVIDIAExternalCareerSite"
+ },
+ {
+  "name": "NXP",
+  "ats": "workday",
+  "slug": "nxp.wd3/careers"
  },
  {
   "name": "Obligo",
@@ -1037,6 +1088,11 @@
   "ats": "comeet",
   "slug": "97.00D",
   "token": "79D2DAE1E7479D1E742DAE3CE802DAE1E74"
+ },
+ {
+  "name": "Parallel Wireless",
+  "ats": "lever",
+  "slug": "parallelwireless"
  },
  {
   "name": "Payoneer",
@@ -1161,6 +1217,17 @@
   "slug": "rapydo"
  },
  {
+  "name": "Reco",
+  "ats": "comeet",
+  "slug": "3A.00D",
+  "token": "A3D47AB28F405C2505C2551E8333151E8"
+ },
+ {
+  "name": "Red Hat",
+  "ats": "workday",
+  "slug": "redhat.wd5/jobs"
+ },
+ {
   "name": "Reflectiz",
   "ats": "comeet",
   "slug": "CA.008",
@@ -1195,6 +1262,11 @@
   "token": "66926766692CDF00669CD22CDF133B"
  },
  {
+  "name": "SafeBreach",
+  "ats": "greenhouse",
+  "slug": "safebreach"
+ },
+ {
   "name": "Salesforce",
   "ats": "workday",
   "slug": "salesforce.wd12/External_Career_Site"
@@ -1203,6 +1275,11 @@
   "name": "Salt Security",
   "ats": "greenhouse",
   "slug": "saltsecurity"
+ },
+ {
+  "name": "Samsung",
+  "ats": "workday",
+  "slug": "sec.wd3/Samsung_Careers"
  },
  {
   "name": "ScaleOps",
@@ -1224,6 +1301,11 @@
   "name": "Semperis",
   "ats": "ashby",
   "slug": "semperis"
+ },
+ {
+  "name": "SentinelOne",
+  "ats": "greenhouse",
+  "slug": "sentinellabs"
  },
  {
   "name": "Shield.",
@@ -1429,6 +1511,12 @@
   "ats": "comeet",
   "slug": "D9.00F",
   "token": "9DF451913BE4EF84EF858D713BE4EF804EF8"
+ },
+ {
+  "name": "Uveye",
+  "ats": "comeet",
+  "slug": "92.00F",
+  "token": "29FA7C17971797FBA179753E53E0A7C"
  },
  {
   "name": "Vectorious Medical Technologies",

@@ -4,6 +4,7 @@
 // are fetched only once: kept jobs are reused from the previous run and
 // rejected ones are remembered in data/linkedin-cache.json.
 
+import { readFile } from 'node:fs/promises';
 import { categorize, classify, isSeniorTitle, isTechTitle, htmlToText } from '../docs/lib/classify.js';
 
 const SEARCH = 'https://www.linkedin.com/jobs-guest/jobs/api/seeMoreJobPostings/search';
@@ -38,7 +39,10 @@ const CACHE_DAYS = 45;
 // run reads a bounded number of new ones and the next run continues.
 const MAX_NEW_PER_RUN = Number(process.env.LINKEDIN_MAX_NEW) || 500;
 
-const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+// The searches stop after this long, so a throttled run still finishes.
+const SEARCH_MINUTES = 40;
+
+const sleep =(ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 let blocked = false;
 
@@ -85,6 +89,17 @@ async function search(query) {
   return { cards, failed: false };
 }
 
+// Everything posted by the Israeli tech companies listed in
+// data/linkedin-companies.json (LinkedIn company ids, from the Israeli Tech Map),
+// a group of companies per search. This reaches small companies whose postings
+// the keyword searches above never get to.
+async function companyQueries() {
+  let ids;
+  try { ids = JSON.parse(await readFile(new URL('../data/linkedin-companies.json', import.meta.url), 'utf8')); } catch { return []; }
+  const groups = (list, size) => Array.from({ length: Math.ceil(list.length / size) }, (_, i) => list.slice(i * size, (i + 1) * size));
+  return [...groups(ids.big, 5), ...groups(ids.rest, 30)].map((group) => ({ f_C: group.join(','), sortBy: 'DD' }));
+}
+
 // previousJobs: last run's jobs; cache: { [linkedin id]: ISO date it was rejected }.
 // Returns { jobs, cache, ok }. When LinkedIn refuses to answer, ok is false and
 // the previous LinkedIn jobs are returned unchanged.
@@ -92,7 +107,10 @@ export async function collectLinkedIn(previousJobs, cache = {}) {
   const previous = new Map(previousJobs.filter((j) => j.id.startsWith('linkedin:')).map((j) => [j.id, j]));
   const cards = new Map();
   let failedQueries = 0;
-  for (const query of QUERIES) {
+  const deadline = Date.now() + SEARCH_MINUTES * 60000;
+  for (const query of [...QUERIES, ...await companyQueries()]) {
+    // Out of time: whatever was not searched keeps its previous jobs.
+    if (Date.now() > deadline) { failedQueries++; break; }
     const result = await search(query);
     if (result.failed) failedQueries++;
     for (const card of result.cards) cards.set(card.id, card);

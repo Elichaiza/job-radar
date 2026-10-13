@@ -161,7 +161,10 @@ const fetchers = {
         };
       } catch { return null; }
     });
-    return jobs.filter(Boolean);
+    const result = jobs.filter(Boolean);
+    // Only relevant-looking postings were downloaded; the facet knows the real count.
+    if (facet) result.israelTotal = head.total || 0;
+    return result;
   },
 
   async amazon() {
@@ -217,7 +220,7 @@ export async function fetchCompany(company) {
       ...tags,
     });
   }
-  return { israel, jobs };
+  return { israel: Math.max(israel, raw.israelTotal || 0), jobs };
 }
 
 function displayLocation(location) {

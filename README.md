@@ -27,3 +27,5 @@ python -m http.server 8765 --directory docs   # open http://127.0.0.1:8765
 Type its name in the site's company search. If the board is found right away the company is added to
 `data/companies.json`; otherwise the name is queued in `data/requests.json` and the next collector run
 looks for it by crawling the company's careers page.
+
+`data/linkedin-companies.json` (LinkedIn ids of Israeli tech companies) is also derived from the Israeli Tech Map.
