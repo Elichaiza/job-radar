@@ -10,6 +10,7 @@ on:
       - data/companies.json
       - data/requests.json
       - docs/lib/**
+      - docs/config.js
       - scripts/**
 
 permissions:
@@ -33,7 +34,7 @@ jobs:
         run: |
           git config user.name "job-radar-bot"
           git config user.email "job-radar-bot@users.noreply.github.com"
-          git add docs/data/jobs.json data/companies.json data/requests.json data/linkedin-cache.json
+          git add docs/data/jobs.json docs/data/requests.json data/companies.json data/requests.json data/linkedin-cache.json
           if git diff --cached --quiet; then
             echo "No changes"
             exit 0

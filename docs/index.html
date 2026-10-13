@@ -77,7 +77,7 @@
   <dialog id="settings">
     <form method="dialog">
       <h2>חיבור ל-GitHub</h2>
-      <p class="muted">
+      <p id="settings-intro" class="muted">
         בלי חיבור, הסימונים נשמרים רק בדפדפן הזה. עם טוקן אישי הם נשמרים בריפו הפרטי שלך
         ומסתנכרנים בין כל המכשירים, ואפשר גם להוסיף חברות לחיפוש הקבוע.
       </p>
@@ -88,6 +88,35 @@
         <button id="disconnect" class="btn link" type="button">נתק</button>
         <button class="btn" value="cancel">ביטול</button>
         <button id="save-token" class="btn primary" type="button">שמור והתחבר</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="auth">
+    <form id="auth-form">
+      <h2>כניסה ל-Job Radar</h2>
+      <p class="muted">לכל משתמש יש חשבון משלו: המשרות שסימנת נשמרות בחשבון ומחכות לך בכל מכשיר.</p>
+      <label for="auth-email">אימייל</label>
+      <input id="auth-email" type="email" autocomplete="username" dir="ltr" required>
+      <label for="auth-password">סיסמה</label>
+      <input id="auth-password" type="password" autocomplete="current-password" dir="ltr" minlength="6">
+      <p id="auth-status" class="muted" role="status"></p>
+      <div class="row end">
+        <button id="reset-password" class="btn link" type="button">שכחתי סיסמה</button>
+        <button id="sign-up" class="btn" type="button">הרשמה</button>
+        <button class="btn primary" type="submit">כניסה</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="account">
+    <form method="dialog">
+      <h2>החשבון שלי</h2>
+      <p>מחובר כ-<span id="account-email" dir="ltr"></span></p>
+      <div class="row end">
+        <button id="open-token" class="btn link" type="button">חיבור מנהל</button>
+        <button id="sign-out" class="btn" type="button">התנתק</button>
+        <button class="btn primary" value="cancel">סגור</button>
       </div>
     </form>
   </dialog>

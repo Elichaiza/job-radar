@@ -1,8 +1,14 @@
 import { CATEGORIES, LEVELS } from './lib/classify.js';
 import { findCompany } from './lib/sources.js';
+import * as accounts from './accounts.js';
+
+// With accounts on, every user signs in and their marks live in their account.
+// Without them (docs/config.js not filled in) the marks of the single user live
+// in the private "<repo>-state" repo, reached with a GitHub token.
+const ACCOUNTS = accounts.enabled;
 
 // On GitHub Pages the address is <owner>.github.io/<repo>/, which tells us
-// where the data lives. The private "<repo>-state" repo holds the user's marks.
+// where the data lives.
 const pagesHost = location.hostname.match(/^([\w-]+)\.github\.io$/);
 const OWNER = pagesHost ? pagesHost[1] : 'Elichaiza';
 const SITE_REPO = (pagesHost && location.pathname.split('/')[1]) || 'job-radar';
@@ -25,6 +31,9 @@ const store = {
 let jobs = [];
 let state = normalizeState(store.get('state'));
 let token = store.get('token', '');
+let user = null; // { uid, email } once signed in
+// Are marks being saved somewhere other than this browser?
+const synced = () => (ACCOUNTS ? Boolean(user) : Boolean(token));
 const filters = store.get('filters', { categories: [], levels: [], search: '', onlyNew: false, showSeen: false, sort: 'new' });
 let sideTab = 'applied';
 let shown = 0;
@@ -122,7 +131,7 @@ function mark(kind, id, value) {
   const op = { kind, id, value };
   applyOp(state, op);
   store.set('state', state);
-  if (token) {
+  if (ACCOUNTS || token) {
     pendingOps.push(op);
     store.set('pendingOps', pendingOps);
     clearTimeout(saveTimer);
@@ -132,11 +141,12 @@ function mark(kind, id, value) {
 }
 
 async function pushState() {
-  if (saving || !pendingOps.length || !token) return;
+  if (saving || !pendingOps.length || !synced()) return;
   saving = true;
   const ops = pendingOps.slice();
   try {
-    await updateFile(STATE_REPO, 'state.json', {}, (remote) => {
+    if (ACCOUNTS) await accounts.saveOps(ops);
+    else await updateFile(STATE_REPO, 'state.json', {}, (remote) => {
       const merged = normalizeState(remote);
       ops.forEach((op) => applyOp(merged, op));
       return merged;
@@ -145,7 +155,7 @@ async function pushState() {
     store.set('pendingOps', pendingOps);
     setSyncNote('');
   } catch (err) {
-    setSyncNote(err.status === 401 || err.status === 403 || err.status === 404
+    setSyncNote(!ACCOUNTS && (err.status === 401 || err.status === 403 || err.status === 404)
       ? 'הסימונים נשמרו רק בדפדפן: הטוקן לא תקף או חסרה לו הרשאה.'
       : 'הסימונים נשמרו בדפדפן ויסונכרנו כשהחיבור יחזור.');
   } finally {
@@ -155,9 +165,9 @@ async function pushState() {
 }
 
 async function pullState() {
-  if (!token) return;
+  if (!synced()) return;
   try {
-    const { data } = await readFile(STATE_REPO, 'state.json', {});
+    const data = ACCOUNTS ? await accounts.loadState() : (await readFile(STATE_REPO, 'state.json', {})).data;
     const merged = normalizeState(data);
     pendingOps.forEach((op) => applyOp(merged, op));
     state = merged;
@@ -166,9 +176,10 @@ async function pullState() {
     render();
     if (pendingOps.length) pushState();
   } catch (err) {
-    setSyncNote(err.status === 401 || err.status === 403 || err.status === 404
-      ? 'החיבור ל-GitHub נכשל: הטוקן לא תקף או חסרה לו הרשאה. הסימונים נשמרים בדפדפן בלבד.'
-      : 'לא הצלחתי לטעון את הסימונים מ-GitHub. מוצגים הסימונים השמורים בדפדפן.');
+    setSyncNote(ACCOUNTS ? 'לא הצלחתי לטעון את הסימונים מהחשבון. מוצגים הסימונים השמורים בדפדפן.'
+      : err.status === 401 || err.status === 403 || err.status === 404
+        ? 'החיבור ל-GitHub נכשל: הטוקן לא תקף או חסרה לו הרשאה. הסימונים נשמרים בדפדפן בלבד.'
+        : 'לא הצלחתי לטעון את הסימונים מ-GitHub. מוצגים הסימונים השמורים בדפדפן.');
   }
 }
 
@@ -261,7 +272,8 @@ function renderStatus() {
   if (!generatedAt) return;
   const minutes = Math.round((Date.now() - new Date(generatedAt)) / 60000);
   const when = minutes < 60 ? `לפני ${Math.max(minutes, 1)} דק׳` : minutes < 2880 ? `לפני ${Math.round(minutes / 60)} שעות` : ago(generatedAt);
-  const sync = token ? 'מסונכרן עם GitHub' : 'הסימונים נשמרים בדפדפן הזה בלבד';
+  const sync = ACCOUNTS ? (user ? `מחובר כ-${user.email}` : 'לא מחובר')
+    : token ? 'מסונכרן עם GitHub' : 'הסימונים נשמרים בדפדפן הזה בלבד';
   $('status').textContent = syncNote || `${jobs.length} משרות מ-${companyCount} חברות · עודכן ${when} · ${sync}`;
 }
 
@@ -330,6 +342,11 @@ async function searchCompany(name, url) {
         ), `add company ${name}`);
         saved = ' החברה נוספה לחיפוש הקבוע.';
       } catch { saved = ' לא הצלחתי להוסיף אותה לחיפוש הקבוע (בדוק את הרשאות הטוקן).'; }
+    } else if (user) {
+      try {
+        await accounts.requestCompany(hit.company);
+        saved = ' החברה תיכנס לחיפוש הקבוע בעדכון הקרוב.';
+      } catch { saved = ' לא הצלחתי להוסיף אותה לחיפוש הקבוע. נסה שוב מאוחר יותר.'; }
     } else {
       saved = ' כדי שהחברה תיכנס לחיפוש הקבוע צריך להתחבר ל-GitHub (⚙ חיבור).';
     }
@@ -340,6 +357,17 @@ async function searchCompany(name, url) {
     return;
   }
 
+  if (!token && user) {
+    try {
+      await accounts.requestCompany({ name, url });
+      store.set('sentRequests', [...store.get('sentRequests', []), { name, at: new Date().toISOString() }].slice(-10));
+      sayCompany(`לא מצאתי את ${name} בחיפוש המהיר, אז שלחתי אותה לחיפוש מעמיק. הוא רץ כל כמה שעות, והתוצאה תופיע כאן למטה.`);
+      loadRequests();
+    } catch {
+      sayCompany('לא הצלחתי לשלוח את הבקשה. נסה שוב מאוחר יותר.');
+    }
+    return;
+  }
   if (!token) {
     sayCompany(`לא מצאתי את ${name} בחיפוש המהיר. חיפוש מעמיק דורש חיבור ל-GitHub (⚙ חיבור).`);
     return;
@@ -356,17 +384,28 @@ async function searchCompany(name, url) {
   }
 }
 
+// Deep searches this user asked for: answered ones come from the file the
+// collector publishes, the rest are still waiting for its next run.
+async function accountRequests() {
+  let published = [];
+  try { published = await (await fetch(`data/requests.json?t=${Math.floor(Date.now() / 60000)}`)).json(); } catch { /* not published yet */ }
+  const mine = published.filter((r) => r.by === user.uid && r.name);
+  const waiting = store.get('sentRequests', []).filter((s) => Date.now() - new Date(s.at) < 2 * 86400000
+    && !mine.some((r) => r.name.toLowerCase() === s.name.toLowerCase() && r.checkedAt > s.at));
+  return [...mine, ...waiting.map((s) => ({ name: s.name, status: 'pending' }))];
+}
+
 async function loadRequests() {
-  if (!token) return;
+  if (!token && !user) return;
   let list = [];
-  try { list = (await readFile(SITE_REPO, 'data/requests.json', [])).data; } catch { return; }
+  try { list = token ? (await readFile(SITE_REPO, 'data/requests.json', [])).data : await accountRequests(); } catch { return; }
   const text = (r) => {
     if (r.status === 'pending') return `${r.name}: בחיפוש…`;
     if (r.status === 'found') return `${r.name}: נמצאו ${r.relevant} משרות רלוונטיות (מתוך ${r.israel} בישראל). החברה בחיפוש הקבוע.`;
     return `${r.name}: לא נמצא לוח משרות. אפשר לנסות שוב עם קישור לדף הקריירה.`;
   };
   $('requests').replaceChildren(...list.slice(-6).reverse().map((r) => el('li', { text: text(r) })));
-  if (list.some((r) => r.status === 'pending')) setTimeout(loadRequests, 30000);
+  if (list.some((r) => r.status === 'pending')) setTimeout(loadRequests, token ? 30000 : 300000);
   else if (list.some((r) => r.status === 'found' && Date.now() - new Date(r.checkedAt) < 10 * 60000)) loadJobs();
 }
 
@@ -401,10 +440,17 @@ $('company-form').addEventListener('submit', async (e) => {
 });
 
 $('open-settings').addEventListener('click', () => {
+  if (!ACCOUNTS) return openTokenSettings();
+  if (!user) return $('auth').showModal();
+  $('account-email').textContent = user.email;
+  $('account').showModal();
+});
+function openTokenSettings() {
+  if (ACCOUNTS) $('settings-intro').textContent = 'למנהל המערכת בלבד: עם טוקן אישי, חברה שחיפשת נכנסת לחיפוש הקבוע מיד במקום בעדכון הבא.';
   $('token').value = token;
   $('settings-status').textContent = token ? 'מחובר.' : '';
   $('settings').showModal();
-});
+}
 $('save-token').addEventListener('click', async () => {
   const candidate = $('token').value.trim();
   if (!candidate) return;
@@ -415,12 +461,12 @@ $('save-token').addEventListener('click', async () => {
     await github(`/repos/${OWNER}/${STATE_REPO}`);
     store.set('token', token);
     // Marks made before connecting move to GitHub with the first save.
-    if (!before) {
+    if (!before && !ACCOUNTS) {
       for (const kind of ['applied', 'seen']) for (const [id, value] of Object.entries(state[kind])) pendingOps.push({ kind, id, value });
       store.set('pendingOps', pendingOps);
     }
     $('settings').close();
-    await pullState();
+    if (!ACCOUNTS) await pullState();
     loadRequests();
   } catch {
     token = before;
@@ -429,9 +475,11 @@ $('save-token').addEventListener('click', async () => {
 });
 $('disconnect').addEventListener('click', () => {
   token = '';
-  pendingOps = [];
   store.set('token', '');
-  store.set('pendingOps', []);
+  if (!ACCOUNTS) {
+    pendingOps = [];
+    store.set('pendingOps', []);
+  }
   $('settings').close();
   render();
 });
@@ -439,6 +487,79 @@ $('disconnect').addEventListener('click', () => {
 new IntersectionObserver((entries) => {
   if (entries[0].isIntersecting && shown < visible.length) renderMore();
 }, { rootMargin: '600px' }).observe($('sentinel'));
+
+// --- accounts ---------------------------------------------------------------
+
+function setMarks(next, ops) {
+  state = next;
+  pendingOps = ops;
+  store.set('state', state);
+  store.set('pendingOps', pendingOps);
+}
+
+function onUser(next) {
+  user = next;
+  const lastUid = store.get('uid', '');
+  if (!user) {
+    // Signed out: the marks belong to the account, not to this browser.
+    if (lastUid) setMarks(normalizeState(), []);
+    store.set('uid', '');
+    $('open-settings').textContent = 'כניסה';
+    $('account').close();
+    if (!$('auth').open) $('auth').showModal();
+    render();
+    return;
+  }
+  if (lastUid && lastUid !== user.uid) {
+    setMarks(normalizeState(), []);
+  } else if (!lastUid) {
+    // First sign-in on this browser: marks made here so far move to the account.
+    const ops = [];
+    for (const kind of ['applied', 'seen']) for (const [id, value] of Object.entries(state[kind])) ops.push({ kind, id, value });
+    setMarks(state, ops);
+  }
+  store.set('uid', user.uid);
+  $('open-settings').textContent = `👤 ${user.email.split('@')[0]}`;
+  $('auth').close();
+  render();
+  pullState();
+  loadRequests();
+}
+
+async function authAction(action) {
+  const email = $('auth-email').value.trim();
+  const password = $('auth-password').value;
+  if (!email || (action !== 'reset' && !password)) {
+    $('auth-status').textContent = action === 'reset' ? 'כתוב את האימייל שלך ולחץ שוב.' : 'צריך למלא אימייל וסיסמה.';
+    return;
+  }
+  $('auth-status').textContent = 'רגע…';
+  try {
+    if (action === 'signup') await accounts.signUp(email, password);
+    else if (action === 'signin') await accounts.signIn(email, password);
+    else {
+      await accounts.resetPassword(email);
+      $('auth-status').textContent = 'אם יש חשבון עם האימייל הזה, נשלח אליו קישור לאיפוס הסיסמה.';
+      return;
+    }
+    $('auth-password').value = '';
+    $('auth-status').textContent = '';
+  } catch (err) {
+    $('auth-status').textContent = accounts.errorText(err);
+  }
+}
+
+if (ACCOUNTS) {
+  $('open-settings').textContent = store.get('uid', '') ? '👤' : 'כניסה';
+  // The sign-in window stays until the user signs in.
+  $('auth').addEventListener('cancel', (e) => e.preventDefault());
+  $('auth-form').addEventListener('submit', (e) => { e.preventDefault(); authAction('signin'); });
+  $('sign-up').addEventListener('click', () => authAction('signup'));
+  $('reset-password').addEventListener('click', () => authAction('reset'));
+  $('sign-out').addEventListener('click', () => accounts.signOut());
+  $('open-token').addEventListener('click', () => { $('account').close(); openTokenSettings(); });
+  accounts.start(onUser).catch(() => setSyncNote('לא הצלחתי להתחבר לשירות החשבונות. נסה לרענן את הדף.'));
+}
 
 render();
 loadJobs();

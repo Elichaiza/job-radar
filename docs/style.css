@@ -59,7 +59,7 @@ main { min-width: 0; display: flex; flex-direction: column; gap: 12px; }
   display: flex; flex-direction: column; gap: 10px;
 }
 
-input[type="search"], input[type="text"], input[type="url"], input[type="password"], select {
+input[type="search"], input[type="text"], input[type="url"], input[type="password"], input[type="email"], select {
   font: inherit; color: var(--text); background: var(--bg);
   border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; min-width: 0;
 }

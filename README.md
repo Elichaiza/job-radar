@@ -8,7 +8,11 @@ Finds computer-science jobs in Israel that ask for 0-2 years of experience, stra
   `greenhouse`, `lever`, `ashby`, `smartrecruiters`, `comeet` (needs `token`), `workday`, `amazon`.
 - **Rules:** `docs/lib/classify.js` decides what counts as a tech role, the category, and the experience level.
   The same file runs in the collector and in the browser.
-- **Marks** ("applied" / "hidden") are stored in the private repo `job-radar-state`, in `state.json`.
+- **Accounts:** `docs/accounts.js`, on a free Firebase project whose web config goes in `docs/config.js`.
+  Users sign up with email and password; each user's marks ("applied" / "hidden") live in Firestore under
+  `users/<uid>`, protected by `firestore.rules` (paste that file into the Firebase console).
+  While `docs/config.js` is empty the site has no accounts and the marks are stored in the private repo
+  `job-radar-state`, in `state.json`, using a GitHub token.
 
 ## Running locally
 
