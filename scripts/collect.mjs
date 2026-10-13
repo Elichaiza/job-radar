@@ -7,6 +7,7 @@ import { fetchCompany, pool } from '../docs/lib/sources.js';
 import { FIREBASE } from '../docs/config.js';
 import { discover } from './discover.mjs';
 import { collectLinkedIn } from './linkedin.mjs';
+import { collectCareerPages } from './careers.mjs';
 
 const file = (p) => new URL(`../${p}`, import.meta.url);
 const readJson = async (p, fallback) => {
@@ -96,13 +97,17 @@ await pool(companies, 12, async (company) => {
 
 // LinkedIn covers companies without a board of their own. A posting that also
 // came straight from the company's board is kept only once, from the board.
-const linkedin = await collectLinkedIn(previous.jobs, await readJson('data/linkedin-cache.json', {}));
+// Companies' own careers pages are read meanwhile; they are other sites.
+const [linkedin, careers] = await Promise.all([
+  collectLinkedIn(previous.jobs, await readJson('data/linkedin-cache.json', {})),
+  collectCareerPages(previous.jobs, await readJson('data/careers-cache.json', {})),
+]);
 // Compared by the company's first word, since LinkedIn names differ slightly
 // ("Amazon Web Services (AWS)" vs "Amazon"). This also folds the copies
 // LinkedIn lists per city into one.
 const sameJob = (j) => `${j.company.trim().split(/\s+/)[0]}|${j.title}`.toLowerCase().replace(/[^a-z0-9א-ת|]/g, '');
 const taken = new Set(jobs.map(sameJob));
-for (const job of linkedin.jobs) {
+for (const job of [...careers.jobs, ...linkedin.jobs]) {
   if (taken.has(sameJob(job))) continue;
   taken.add(sameJob(job));
   jobs.push(job);
@@ -120,6 +125,7 @@ await writeJson('data/requests.json', requests, 1);
 await writeJson('docs/data/requests.json', requests.filter((r) => r.by).slice(-300)
   .map(({ name, by, status, israel, relevant, checkedAt }) => ({ name, by, status, israel, relevant, checkedAt })));
 await writeJson('data/linkedin-cache.json', linkedin.cache);
+await writeJson('data/careers-cache.json', careers.cache);
 
 console.log(`${unique.length} jobs from ${companies.length} companies (${failed.length} failed)`);
 for (const f of failed) console.log(`  failed: ${f}`);

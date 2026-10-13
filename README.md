@@ -28,4 +28,5 @@ Type its name in the site's company search. If the board is found right away the
 `data/companies.json`; otherwise the name is queued in `data/requests.json` and the next collector run
 looks for it by crawling the company's careers page.
 
-`data/linkedin-companies.json` (LinkedIn ids of Israeli tech companies) is also derived from the Israeli Tech Map.
+`data/linkedin-companies.json` (LinkedIn ids of Israeli tech companies) and `data/career-pages.json`
+(their careers pages and homepages, read by `scripts/careers.mjs`) are also derived from the Israeli Tech Map.
