@@ -143,6 +143,19 @@ dialog {
 dialog::backdrop { background: rgba(0, 0, 0, .45); }
 dialog form { display: flex; flex-direction: column; gap: 8px; }
 
+dialog#cv { width: min(640px, calc(100vw - 32px)); }
+.cv-body { max-height: 60vh; overflow-y: auto; font-size: 14px; }
+.cv-body h3 { font-size: 14px; margin: 14px 0 4px; }
+.cv-list { margin: 0; padding-inline-start: 20px; }
+.cv-list li { margin: 3px 0; }
+.cv-head { display: block; font-weight: 600; direction: ltr; text-align: right; }
+.cv-note { display: block; color: var(--muted); }
+.cv-error { color: var(--warn); background: var(--warn-bg); border-radius: 6px; padding: 6px 8px; direction: ltr; text-align: start; }
+.tag.fit { font-weight: 600; }
+.tag.fit.high { background: var(--good-bg); color: var(--good); }
+.tag.fit.medium, .tag.fit.low { background: var(--warn-bg); color: var(--warn); }
+.btn[disabled] { opacity: .6; cursor: progress; }
+
 .only-narrow { display: none; }
 
 @media (max-width: 980px) {

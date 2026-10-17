@@ -82,7 +82,7 @@ async function github(path, options = {}) {
     headers: { Accept: 'application/vnd.github+json', Authorization: `Bearer ${token}`, ...(options.headers || {}) },
   });
   if (!res.ok) throw Object.assign(new Error(`GitHub ${res.status}`), { status: res.status });
-  return res.json();
+  return res.status === 204 ? null : res.json();
 }
 
 const encode = (text) => btoa(String.fromCharCode(...new TextEncoder().encode(text)));
@@ -251,6 +251,7 @@ function jobCard(job) {
         el('span', { class: `tag level ${job.level}`, text: LEVEL_LABELS[job.level] })),
       job.evidence && el('div', { class: 'job-evidence', text: `“${job.evidence}”` })),
     el('div', { class: 'job-actions' },
+      token && cvButton(job),
       el('a', { class: 'btn primary', href: safeUrl(job.url), target: '_blank', rel: 'noopener noreferrer', text: 'Apply' }),
       el('button', {
         class: 'btn', type: 'button', text: 'הגשתי',
@@ -468,6 +469,7 @@ $('save-token').addEventListener('click', async () => {
     $('settings').close();
     if (!ACCOUNTS) await pullState();
     loadRequests();
+    loadCvs();
   } catch {
     token = before;
     $('settings-status').textContent = `הטוקן לא הצליח לגשת לריפו ${OWNER}/${STATE_REPO}. בדוק שבחרת בו את שני הריפוז עם הרשאת Contents: Read and write.`;
@@ -487,6 +489,142 @@ $('disconnect').addEventListener('click', () => {
 new IntersectionObserver((entries) => {
   if (entries[0].isIntersecting && shown < visible.length) renderMore();
 }, { rootMargin: '600px' }).observe($('sentinel'));
+
+// --- tailored CVs -------------------------------------------------------------
+// With a token, any job can get a CV tailored to it. The "Tailor CV" workflow in
+// the private state repo writes tailored/<slug>/report.json and the PDF.
+
+const CV_WORKFLOW = 'tailor-cv.yml';
+const CV_FILE = 'Elichai_Zargarian_CV.pdf';
+const CV_POLL_MS = 20000;
+const CV_GIVE_UP_MS = 25 * 60000;
+const cvSlug = (id) => String(id).replace(/[^A-Za-z0-9._-]/g, '_');
+let cvReady = new Set();
+let cvPending = store.get('cvPending', {}); // slug -> when the run was started
+let cvTimer;
+
+function cvButton(job) {
+  const slug = cvSlug(job.id);
+  const props = { class: 'btn', type: 'button', 'data-cv': slug };
+  if (cvPending[slug]) return el('button', { ...props, disabled: true, text: 'מכין קו"ח…', title: 'לוקח בערך 2–3 דקות' });
+  if (cvReady.has(slug)) return el('button', { ...props, class: 'btn done', text: 'קו"ח מותאם ✓', onclick: () => openCv(job) });
+  return el('button', { ...props, text: 'קו"ח מותאם', onclick: () => startCv(job) });
+}
+
+function refreshCvButtons(slug) {
+  const job = jobs.find((j) => cvSlug(j.id) === slug);
+  if (!job) return;
+  for (const button of document.querySelectorAll(`[data-cv="${CSS.escape(slug)}"]`)) button.replaceWith(cvButton(job));
+}
+
+async function loadCvs() {
+  if (!token) return;
+  try {
+    const list = await github(`/repos/${OWNER}/${STATE_REPO}/contents/tailored?t=${Date.now()}`);
+    cvReady = new Set(list.filter((f) => f.type === 'dir').map((f) => f.name));
+  } catch (err) {
+    if (err.status !== 404) return;
+    cvReady = new Set();
+  }
+  render();
+  pollCvs();
+}
+
+async function startCv(job) {
+  const slug = cvSlug(job.id);
+  if ($('cv').open) $('cv').close();
+  cvPending[slug] = new Date().toISOString();
+  store.set('cvPending', cvPending);
+  refreshCvButtons(slug);
+  try {
+    await github(`/repos/${OWNER}/${STATE_REPO}/actions/workflows/${CV_WORKFLOW}/dispatches`, {
+      method: 'POST',
+      body: JSON.stringify({ ref: 'main', inputs: { job_id: job.id, url: job.url, title: job.title, company: job.company, location: job.location || '' } }),
+    });
+    pollCvs();
+  } catch (err) {
+    delete cvPending[slug];
+    store.set('cvPending', cvPending);
+    refreshCvButtons(slug);
+    setSyncNote(err.status === 403 || err.status === 404
+      ? 'לא הצלחתי להפעיל הכנת קו"ח: לטוקן צריך להוסיף הרשאת Actions: Read and write על job-radar-state.'
+      : 'לא הצלחתי להפעיל הכנת קו"ח. נסה שוב בעוד רגע.');
+  }
+}
+
+async function readCvReport(slug) {
+  return (await readFile(STATE_REPO, `tailored/${slug}/report.json`, null)).data;
+}
+
+// A run is done when its report is newer than the moment it was started.
+async function pollCvs() {
+  clearTimeout(cvTimer);
+  const slugs = Object.keys(cvPending);
+  if (!token || !slugs.length) return;
+  for (const slug of slugs) {
+    const started = Date.parse(cvPending[slug]);
+    let report = null;
+    try { report = await readCvReport(slug); } catch { /* try again next round */ }
+    const finished = report && Date.parse(report.generatedAt) > started - 60000;
+    if (!finished && Date.now() - started < CV_GIVE_UP_MS) continue;
+    delete cvPending[slug];
+    if (finished) cvReady.add(slug);
+    else setSyncNote('הכנת הקו"ח לקחה יותר מדי זמן. אפשר לבדוק ב-Actions של job-radar-state.');
+    refreshCvButtons(slug);
+  }
+  store.set('cvPending', cvPending);
+  if (Object.keys(cvPending).length) cvTimer = setTimeout(pollCvs, CV_POLL_MS);
+}
+
+const FIT_LABELS = { high: 'התאמה גבוהה', medium: 'התאמה בינונית', low: 'התאמה נמוכה' };
+
+async function openCv(job) {
+  const slug = cvSlug(job.id);
+  const body = $('cv-body');
+  $('cv-title').textContent = `${job.title} · ${job.company}`;
+  body.replaceChildren(el('p', { class: 'muted', text: 'טוען…' }));
+  $('cv-download').hidden = true;
+  $('cv-download').onclick = () => downloadCv(slug);
+  $('cv-again').onclick = () => startCv(job);
+  $('cv').showModal();
+  let data;
+  try { data = await readCvReport(slug); } catch { data = null; }
+  if (!data) return body.replaceChildren(el('p', { text: 'לא מצאתי את הקו"ח. אפשר להכין מחדש.' }));
+  if (data.status !== 'ok') {
+    return body.replaceChildren(
+      el('p', { text: 'ההכנה נכשלה:' }),
+      el('p', { class: 'cv-error', text: data.message || '' }),
+      data.run && el('a', { href: safeUrl(data.run), target: '_blank', rel: 'noopener noreferrer', text: 'פרטי הריצה ב-GitHub' }));
+  }
+  const r = data.report || {};
+  // Requirements are usually English and notes Hebrew; each keeps its own direction.
+  const pair = (head, note) => [el('bdi', { class: 'cv-head', text: head }), note ? el('bdi', { class: 'cv-note', text: note }) : null];
+  const list = (items, parts) => (items?.length ? el('ul', { class: 'cv-list' }, ...items.map((i) => el('li', {}, ...parts(i)))) : el('p', { class: 'muted', text: 'אין.' }));
+  $('cv-download').hidden = false;
+  body.replaceChildren(
+    el('p', {}, el('span', { class: `tag fit ${r.fit || ''}`, text: FIT_LABELS[r.fit] || 'התאמה' }), ' ', r.fitReason || ''),
+    el('h3', { text: 'פערים: מה שהמשרה מבקשת ולא נכתב בקו"ח' }),
+    list(r.gaps, (g) => pair(g.requirement, g.note)),
+    el('h3', { text: 'מה התאמתי' }),
+    list(r.changes, (c) => [el('bdi', { text: c })]),
+    el('h3', { text: 'דרישות שיש להן כיסוי' }),
+    list(r.matched, (m) => pair(m.requirement, m.evidence)),
+    el('p', { class: 'muted', text: `הוכן ${ago(data.generatedAt)}` }));
+}
+
+async function downloadCv(slug) {
+  try {
+    const res = await fetch(`${API}/repos/${OWNER}/${STATE_REPO}/contents/tailored/${slug}/${CV_FILE}?t=${Date.now()}`, {
+      headers: { Accept: 'application/vnd.github.raw', Authorization: `Bearer ${token}` },
+    });
+    if (!res.ok) throw new Error(`GitHub ${res.status}`);
+    const url = URL.createObjectURL(await res.blob());
+    el('a', { href: url, download: CV_FILE }).click();
+    setTimeout(() => URL.revokeObjectURL(url), 10000);
+  } catch {
+    $('cv-body').prepend(el('p', { class: 'cv-error', text: 'ההורדה נכשלה. נסה שוב.' }));
+  }
+}
 
 // --- accounts ---------------------------------------------------------------
 
@@ -562,6 +700,6 @@ if (ACCOUNTS) {
 }
 
 render();
-loadJobs();
+loadJobs().then(loadCvs);
 pullState();
 loadRequests();

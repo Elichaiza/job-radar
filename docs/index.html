@@ -83,11 +83,24 @@
       </p>
       <label for="token">טוקן אישי (Fine-grained)</label>
       <input id="token" type="password" placeholder="github_pat_…" autocomplete="off" dir="ltr">
+      <p class="muted">להכנת קו"ח מותאמים הטוקן צריך גם הרשאת Actions: Read and write על job-radar-state.</p>
       <p id="settings-status" class="muted"></p>
       <div class="row end">
         <button id="disconnect" class="btn link" type="button">נתק</button>
         <button class="btn" value="cancel">ביטול</button>
         <button id="save-token" class="btn primary" type="button">שמור והתחבר</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="cv">
+    <form method="dialog">
+      <h2 id="cv-title"></h2>
+      <div id="cv-body" class="cv-body"></div>
+      <div class="row end">
+        <button id="cv-again" class="btn link" type="button">הכן מחדש</button>
+        <button class="btn" value="cancel">סגור</button>
+        <button id="cv-download" class="btn primary" type="button" hidden>הורד PDF</button>
       </div>
     </form>
   </dialog>

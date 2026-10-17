@@ -41,7 +41,7 @@ const iso = (d) => {
   return t && !Number.isNaN(+t) ? t.toISOString() : null;
 };
 
-const fetchers = {
+export const fetchers = {
   async greenhouse({ slug }) {
     const data = await getJson(`https://boards-api.greenhouse.io/v1/boards/${slug}/jobs?content=true`);
     return (data.jobs || []).map((j) => ({
