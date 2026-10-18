@@ -63,6 +63,12 @@
   "token": "807302A201C483F3831302A4038100E201C3831"
  },
  {
+  "name": "AI21 Labs",
+  "ats": "comeet",
+  "slug": "E6.001",
+  "token": "6E12946DC230276E13DE93708294637083708"
+ },
+ {
   "name": "Aiven",
   "ats": "greenhouse",
   "slug": "aiven36"
@@ -304,6 +310,12 @@
   "slug": "capitolis"
  },
  {
+  "name": "Cardo Systems",
+  "ats": "comeet",
+  "slug": "F2.003",
+  "token": "2F3EBF2F32F35E614A58D9BCC11B2EBF"
+ },
+ {
   "name": "Cato Networks",
   "ats": "greenhouse",
   "slug": "catonetworks"
@@ -405,6 +417,11 @@
   "ats": "comeet",
   "slug": "A8.00D",
   "token": "8AD340E3CBB3CBB22B445680340E22B44568"
+ },
+ {
+  "name": "CYE",
+  "ats": "lever",
+  "slug": "CYE"
  },
  {
   "name": "Cyera",
@@ -586,6 +603,11 @@
   "token": "AEE4C824194625E625E15DC625E02BB80"
  },
  {
+  "name": "Forcepoint",
+  "ats": "workday",
+  "slug": "forcepoint.wd1/external-careers"
+ },
+ {
   "name": "Forter",
   "ats": "greenhouse",
   "slug": "forter"
@@ -705,6 +727,12 @@
   "name": "HUMAN",
   "ats": "ashby",
   "slug": "human"
+ },
+ {
+  "name": "HyperGuest",
+  "ats": "comeet",
+  "slug": "09.00B",
+  "token": "90B3642516390B1B2148583F4D242C90B0"
  },
  {
   "name": "Hypernative Labs",
@@ -901,6 +929,12 @@
   "ats": "comeet",
   "slug": "62.00F",
   "token": "26F9BC15E726F74D110915E74DE4DEE9A"
+ },
+ {
+  "name": "Majestic Labs",
+  "ats": "comeet",
+  "slug": "AA.004",
+  "token": "AA44A7C35345FC44A7C5FC4055205FC42A90"
  },
  {
   "name": "Marvell",
