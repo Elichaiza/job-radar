@@ -501,6 +501,12 @@
   "token": "2769D81626762C4E762762C4EC4E1626"
  },
  {
+  "name": "Droxi",
+  "ats": "comeet",
+  "slug": "1A.001",
+  "token": "A1146771E333C6603C661E335A9902844"
+ },
+ {
   "name": "Dual Bird Technologies",
   "ats": "comeet",
   "slug": "2B.00C",
@@ -1180,6 +1186,12 @@
   "name": "Orca Security",
   "ats": "greenhouse",
   "slug": "orcasecurity"
+ },
+ {
+  "name": "Ownera",
+  "ats": "comeet",
+  "slug": "59.003",
+  "token": "95341450254C37F212A612A653EB12A64A98"
  },
  {
   "name": "Palo Alto Networks",
