@@ -4,6 +4,9 @@
 // are followed, and the page behind each one is classified like any posting.
 // Pages that build their list with JavaScript yield nothing and are skipped.
 //
+// Many careers pages only send visitors on to a job board; those boards are
+// returned so the collector can read the company from its board from then on.
+//
 // data/career-pages.json: [{ name, url, abroad? }], from the Israeli Tech Map.
 // "abroad" marks multinationals, whose postings must mention Israel to count.
 
@@ -11,6 +14,7 @@ import { readFile } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 import { classify, htmlToText, isIsrael, isSeniorTitle, isTechTitle } from '../docs/lib/classify.js';
 import { pool } from '../docs/lib/sources.js';
+import { fingerprint } from './discover.mjs';
 
 const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36';
 const CACHE_DAYS = 30;
@@ -81,6 +85,7 @@ export async function collectCareerPages(previousJobs, cache = {}) {
   const now = new Date().toISOString();
   const deadline = Date.now() + MINUTES * 60000;
   const jobs = [];
+  const boards = [];
   let pages = 0;
   let read = 0;
 
@@ -93,13 +98,21 @@ export async function collectCareerPages(previousJobs, cache = {}) {
     const mine = () => [...previous.values()].filter((j) => j.company === company.name);
     // Out of time or the site is down: keep what this company had.
     if (Date.now() > deadline) { jobs.push(...mine()); return; }
+    const found = [];
+    const noteBoards = async (p) => { if (p) found.push(...await fingerprint(`${p.url}
+${p.html}`)); };
     let page = await fetchPage(company.url);
+    await noteBoards(page);
     // Only the homepage is known: the careers page is whatever it links to as such.
-    if (page && company.home) {
+    if (page && company.home && !found.length) {
       const careers = careersLink(page.html, page.url);
       if (!careers) return;
       page = await fetchPage(careers);
+      await noteBoards(page);
     }
+    // One board, not several (a page listing other companies' boards is no clue).
+    const distinct = new Set(found.map((b) => `${b.ats}/${b.slug}`));
+    if (distinct.size === 1) boards.push({ name: company.name, ...found[0] });
     if (!page) { jobs.push(...mine()); return; }
     pages++;
     for (const link of jobLinks(page.html, page.url)) {
@@ -122,8 +135,8 @@ export async function collectCareerPages(previousJobs, cache = {}) {
 
   const cutoff = Date.now() - CACHE_DAYS * 86400000;
   for (const [url, date] of Object.entries(cache)) if (new Date(date) < cutoff) delete cache[url];
-  console.log(`career pages${SHARDS > 1 ? ` ${SHARD + 1}/${SHARDS}` : ''}: ${pages} of ${known.length + homes.length} read, ${read} new postings read, ${jobs.length} kept`);
-  return { jobs: [...new Map(jobs.map((j) => [j.id, j])).values()], cache };
+  console.log(`career pages${SHARDS > 1 ? ` ${SHARD + 1}/${SHARDS}` : ''}: ${pages} of ${known.length + homes.length} read, ${read} new postings read, ${jobs.length} kept, ${boards.length} job boards found`);
+  return { jobs: [...new Map(jobs.map((j) => [j.id, j])).values()], cache, boards };
 }
 
 // node scripts/careers.mjs [--out <file>]: with --out, one shard's part for collect.mjs.

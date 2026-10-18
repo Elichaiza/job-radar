@@ -9,6 +9,7 @@ import { discover } from './discover.mjs';
 import { collectLinkedIn } from './linkedin.mjs';
 import { collectCareerPages } from './careers.mjs';
 import { readParts } from './parts.mjs';
+import { collectDrushim } from './drushim.mjs';
 
 const file = (p) => new URL(`../${p}`, import.meta.url);
 const readJson = async (p, fallback) => {
@@ -112,12 +113,46 @@ const [linkedin, careers] = process.env.PARTS
 for (const [name, part] of [['LinkedIn', linkedin], ['careers pages', careers]]) {
   if (part.missing) failed.push(`${name}: ${part.missing} of ${shards} shards failed, kept their previous results`);
 }
+
+// Job boards that careers pages led to. Like the site's requests, a board is
+// added only if it really has postings in Israel; from the next run on it is
+// read with the other companies.
+const MAX_NEW_BOARDS = 80;
+// The board's name has to come from the company's: an acquired company's site
+// may send visitors to its new owner's board, whose jobs are not its own.
+// (A Comeet board is named by a code, but its key is on the company's own page.)
+const GENERIC = /^(the|and|ltd|inc|corp|group|labs?|tech|technologies|technology|systems?|software|security|cyber|data|cloud|medical|health|solutions?|global|israel|international|networks?|ai|io)$/;
+const namedAfter = (b) => b.name.toLowerCase().split(/[^a-z0-9]+/)
+  .some((w) => w.length >= 3 && !GENERIC.test(w) && b.slug.toLowerCase().includes(w));
+const onBoard = new Set(companies.map((c) => `${c.ats}/${c.slug}`));
+const onBoardNames = new Set(companies.map((c) => c.name.toLowerCase()));
+const newBoards = [...new Map((careers.boards || [])
+  .filter((b) => (b.ats === 'comeet' ? b.token : namedAfter(b)))
+  .filter((b) => !onBoard.has(`${b.ats}/${b.slug}`) && !onBoardNames.has(b.name.toLowerCase()))
+  .map((b) => [`${b.ats}/${b.slug}`, b])).values()].slice(0, MAX_NEW_BOARDS);
+let boardsAdded = 0;
+await pool(newBoards, 8, async ({ name, ats, slug, token }) => {
+  const company = token ? { name, ats, slug, token } : { name, ats, slug };
+  try {
+    const result = await fetchCompany(company);
+    if (!result.israel) return;
+    companies.push(company);
+    jobs.push(...result.jobs);
+    boardsAdded++;
+    console.log(`board from careers page: ${name} ${ats}/${slug}, ${result.jobs.length} relevant jobs`);
+  } catch { /* not a working board */ }
+});
+if (boardsAdded) companies.sort((a, b) => a.name.localeCompare(b.name));
+console.log(`job boards from careers pages: ${boardsAdded} added of ${newBoards.length} new`);
 // Compared by the company's first word, since LinkedIn names differ slightly
 // ("Amazon Web Services (AWS)" vs "Amazon"). This also folds the copies
 // LinkedIn lists per city into one.
 const sameJob = (j) => `${j.company.trim().split(/\s+/)[0]}|${j.title}`.toLowerCase().replace(/[^a-z0-9א-ת|]/g, '');
 const taken = new Set(jobs.map(sameJob));
-for (const job of [...careers.jobs, ...linkedin.jobs]) {
+// Drushim comes last: the same opening from the company itself is better.
+const drushim = await collectDrushim(previous.jobs);
+if (!drushim.ok) failed.push('Drushim: no answer, kept the previous results');
+for (const job of [...careers.jobs, ...linkedin.jobs, ...drushim.jobs]) {
   if (taken.has(sameJob(job))) continue;
   taken.add(sameJob(job));
   jobs.push(job);

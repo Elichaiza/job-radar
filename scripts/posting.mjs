@@ -9,6 +9,7 @@
 import { readFile } from 'node:fs/promises';
 import { fetchers } from '../docs/lib/sources.js';
 import { htmlToText } from '../docs/lib/classify.js';
+import { drushimPosting } from './drushim.mjs';
 
 const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Safari/537.36';
 const MIN_LENGTH = 300;
@@ -58,6 +59,7 @@ export async function postingText(id, url, title) {
   const attempts = [];
   if (ats === 'linkedin') attempts.push(() => linkedin(parts[0]));
   else if (ats === 'workday') attempts.push(() => workday(url));
+  else if (ats === 'drushim') attempts.push(() => drushimPosting(url));
   else if (fetchers[ats] && parts.length >= 2) attempts.push(() => fromBoard(ats, parts.slice(0, -1).join(':'), parts.at(-1)));
   attempts.push(async () => {
     const text = pageText(await (await get(url)).text());

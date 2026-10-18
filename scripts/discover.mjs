@@ -32,7 +32,8 @@ async function fetchPage(url) {
 
 const COMEET_TOKEN = /["']?token["']?\s*[:=]\s*["']([0-9A-F]{16,})["']/;
 
-async function fingerprint(html) {
+// The job boards a page links to or embeds: [{ ats, slug, token? }].
+export async function fingerprint(html) {
   const found = [];
   for (const [ats, re, toSlug] of FINGERPRINTS) {
     const m = html.match(re);

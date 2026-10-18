@@ -16,7 +16,7 @@ export async function writePart(out, part) {
 }
 
 // Merges <dir>/<kind>-0.json ... <kind>-<shards-1>.json into what the
-// collector itself returns: { jobs, cache, ok }. A shard that left no part
+// collector itself returns: { jobs, cache, ok, boards }. A shard that left no part
 // (its machine failed) keeps all the previous jobs of that source, since
 // there is no telling which of them it would have found again.
 export async function readParts(dir, kind, shards, previous, cache) {
@@ -30,6 +30,7 @@ export async function readParts(dir, kind, shards, previous, cache) {
     jobs: [...jobs.values()],
     cache: parts.length ? Object.assign({}, ...parts.map((p) => p.cache)) : cache,
     ok: parts.some((p) => p.ok !== false),
+    boards: parts.flatMap((p) => p.boards || []),
     missing: shards - parts.length,
   };
 }

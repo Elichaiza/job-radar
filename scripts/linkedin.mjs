@@ -32,7 +32,8 @@ const QUERIES = [
     'machine learning engineer', 'security researcher', 'verification engineer', 'מפתח תוכנה', 'מהנדס תוכנה',
   ].map((keywords) => ({ keywords, sortBy: 'DD', f_TPR: 'r604800' })),
 ];
-const MAX_PAGES = 25;
+// LinkedIn serves up to 1000 results (100 pages) per search.
+const MAX_PAGES = 100;
 const PAGE_SIZE = 10;
 const CACHE_DAYS = 45;
 // Reading a posting takes a few seconds once LinkedIn starts throttling, so a
