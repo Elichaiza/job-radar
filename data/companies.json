@@ -575,6 +575,11 @@
   "slug": "ffive.wd5/f5jobs"
  },
  {
+  "name": "Ferring Pharmaceuticals",
+  "ats": "workday",
+  "slug": "ferring.wd3/Ferring"
+ },
+ {
   "name": "Fetcherr",
   "ats": "comeet",
   "slug": "68.006",
@@ -907,6 +912,11 @@
   "ats": "comeet",
   "slug": "90.00C",
   "token": "9C2709C1D43A827030C3A82709C"
+ },
+ {
+  "name": "Logz.io",
+  "ats": "lever",
+  "slug": "logz"
  },
  {
   "name": "Loora",
