@@ -44,7 +44,13 @@ const SEARCH_MINUTES = 40;
 // ...and reading new postings stops this long after the start.
 const TOTAL_MINUTES = 70;
 
-const sleep =(ms) => new Promise((resolve) => setTimeout(resolve, ms));
+// The workflow runs several copies at once, each on its own machine (and so
+// its own address, which LinkedIn throttles separately). SHARD=i/n makes this
+// copy do every n-th search.
+const [SHARD, SHARDS] = (process.env.SHARD || '0/1').split('/').map(Number);
+const mine = (list) => list.filter((_, i) => i % SHARDS === SHARD);
+
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 let blocked = false;
 
@@ -99,7 +105,7 @@ async function companyQueries() {
   let ids;
   try { ids = JSON.parse(await readFile(new URL('../data/linkedin-companies.json', import.meta.url), 'utf8')); } catch { return []; }
   const groups = (list, size) => Array.from({ length: Math.ceil(list.length / size) }, (_, i) => list.slice(i * size, (i + 1) * size));
-  const queries = [...groups(ids.big, 5), ...groups(ids.rest, 30)].map((group) => ({ f_C: group.join(','), sortBy: 'DD' }));
+  const queries = mine([...groups(ids.big, 5), ...groups(ids.rest, 30)].map((group) => ({ f_C: group.join(','), sortBy: 'DD' })));
   // A run that is out of time stops part-way, so each run starts somewhere else.
   const start = Math.floor(Math.random() * queries.length);
   return [...queries.slice(start), ...queries.slice(0, start)];
@@ -114,10 +120,13 @@ export async function collectLinkedIn(previousJobs, cache = {}) {
   let failedQueries = 0;
   const started = Date.now();
   const deadline = started + SEARCH_MINUTES * 60000;
-  for (const query of [...QUERIES, ...await companyQueries()]) {
+  const queries = [...mine(QUERIES), ...await companyQueries()];
+  let searched = 0;
+  for (const query of queries) {
     // Out of time: whatever was not searched keeps its previous jobs.
     if (Date.now() > deadline) { failedQueries++; break; }
     const result = await search(query);
+    searched++;
     if (result.failed) failedQueries++;
     for (const card of result.cards) cards.set(card.id, card);
     if (blocked) break;
@@ -163,11 +172,19 @@ export async function collectLinkedIn(previousJobs, cache = {}) {
 
   const cutoff = Date.now() - CACHE_DAYS * 86400000;
   for (const [id, date] of Object.entries(cache)) if (new Date(date) < cutoff) delete cache[id];
-  console.log(`linkedin: ${cards.size} postings seen, ${fetched} new ones read, ${jobs.length} kept${failedQueries ? `, ${failedQueries} queries failed` : ''}`);
+  console.log(`linkedin${SHARDS > 1 ? ` ${SHARD + 1}/${SHARDS}` : ''}: ${searched} of ${queries.length} searches, ${cards.size} postings seen, ${fetched} new ones read, ${jobs.length} kept${failedQueries ? `, ${failedQueries} queries failed` : ''}`);
   return { jobs, cache, ok: true };
 }
 
+// node scripts/linkedin.mjs [--out <file>]: with --out, one shard's part for collect.mjs.
 if (process.argv[1]?.replace(/\\/g, '/').endsWith('scripts/linkedin.mjs')) {
-  const { jobs } = await collectLinkedIn([], {});
-  for (const j of jobs) console.log(`${j.level.padEnd(7)} ${j.category.padEnd(9)} ${j.company} | ${j.title} | ${j.location}`);
+  const at = process.argv.indexOf('--out');
+  if (at > 0) {
+    const { readJson, writePart } = await import('./parts.mjs');
+    const previous = await readJson('docs/data/jobs.json', { jobs: [] });
+    await writePart(process.argv[at + 1], await collectLinkedIn(previous.jobs, await readJson('data/linkedin-cache.json', {})));
+  } else {
+    const { jobs } = await collectLinkedIn([], {});
+    for (const j of jobs) console.log(`${j.level.padEnd(7)} ${j.category.padEnd(9)} ${j.company} | ${j.title} | ${j.location}`);
+  }
 }

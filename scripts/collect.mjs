@@ -8,6 +8,7 @@ import { FIREBASE } from '../docs/config.js';
 import { discover } from './discover.mjs';
 import { collectLinkedIn } from './linkedin.mjs';
 import { collectCareerPages } from './careers.mjs';
+import { readParts } from './parts.mjs';
 
 const file = (p) => new URL(`../${p}`, import.meta.url);
 const readJson = async (p, fallback) => {
@@ -98,10 +99,19 @@ await pool(companies, 12, async (company) => {
 // LinkedIn covers companies without a board of their own. A posting that also
 // came straight from the company's board is kept only once, from the board.
 // Companies' own careers pages are read meanwhile; they are other sites.
-const [linkedin, careers] = await Promise.all([
-  collectLinkedIn(previous.jobs, await readJson('data/linkedin-cache.json', {})),
-  collectCareerPages(previous.jobs, await readJson('data/careers-cache.json', {})),
-]);
+// In the workflow they ran beforehand as shards (PARTS names their folder).
+const linkedinCache = await readJson('data/linkedin-cache.json', {});
+const careersCache = await readJson('data/careers-cache.json', {});
+const shards = Number(process.env.SHARDS) || 1;
+const [linkedin, careers] = process.env.PARTS
+  ? await Promise.all([
+    readParts(process.env.PARTS, 'linkedin', shards, previous.jobs.filter((j) => j.id.startsWith('linkedin:')), linkedinCache),
+    readParts(process.env.PARTS, 'careers', shards, previous.jobs.filter((j) => j.id.startsWith('site:')), careersCache),
+  ])
+  : await Promise.all([collectLinkedIn(previous.jobs, linkedinCache), collectCareerPages(previous.jobs, careersCache)]);
+for (const [name, part] of [['LinkedIn', linkedin], ['careers pages', careers]]) {
+  if (part.missing) failed.push(`${name}: ${part.missing} of ${shards} shards failed, kept their previous results`);
+}
 // Compared by the company's first word, since LinkedIn names differ slightly
 // ("Amazon Web Services (AWS)" vs "Amazon"). This also folds the copies
 // LinkedIn lists per city into one.

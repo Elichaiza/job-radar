@@ -15,7 +15,10 @@ import { pool } from '../docs/lib/sources.js';
 const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36';
 const CACHE_DAYS = 30;
 const MAX_LINKS_PER_COMPANY = 25;
-const MINUTES = 25;
+const MINUTES = 30;
+// SHARD=i/n: this copy reads every n-th company (the workflow runs several at once).
+const [SHARD, SHARDS] = (process.env.SHARD || '0/1').split('/').map(Number);
+const mine = (list) => list.filter((_, i) => i % SHARDS === SHARD);
 
 async function fetchPage(url) {
   try {
@@ -83,8 +86,8 @@ export async function collectCareerPages(previousJobs, cache = {}) {
 
   // Companies with a known careers page are read every run; the long list of
   // homepages starts somewhere else each run and goes as far as time allows.
-  const known = companies.filter((c) => !c.home);
-  const homes = companies.filter((c) => c.home);
+  const known = mine(companies.filter((c) => !c.home));
+  const homes = mine(companies.filter((c) => c.home));
   const start = Math.floor(Math.random() * (homes.length || 1));
   await pool([...known, ...homes.slice(start), ...homes.slice(0, start)], 10, async (company) => {
     const mine = () => [...previous.values()].filter((j) => j.company === company.name);
@@ -119,11 +122,19 @@ export async function collectCareerPages(previousJobs, cache = {}) {
 
   const cutoff = Date.now() - CACHE_DAYS * 86400000;
   for (const [url, date] of Object.entries(cache)) if (new Date(date) < cutoff) delete cache[url];
-  console.log(`career pages: ${pages} of ${companies.length} read, ${read} new postings read, ${jobs.length} kept`);
+  console.log(`career pages${SHARDS > 1 ? ` ${SHARD + 1}/${SHARDS}` : ''}: ${pages} of ${known.length + homes.length} read, ${read} new postings read, ${jobs.length} kept`);
   return { jobs: [...new Map(jobs.map((j) => [j.id, j])).values()], cache };
 }
 
+// node scripts/careers.mjs [--out <file>]: with --out, one shard's part for collect.mjs.
 if (process.argv[1]?.replace(/\\/g, '/').endsWith('scripts/careers.mjs')) {
-  const { jobs } = await collectCareerPages([], {});
-  for (const j of jobs) console.log(`${j.level.padEnd(7)} ${j.category.padEnd(9)} ${j.company} | ${j.title} | ${j.url}`);
+  const at = process.argv.indexOf('--out');
+  if (at > 0) {
+    const { readJson, writePart } = await import('./parts.mjs');
+    const previous = await readJson('docs/data/jobs.json', { jobs: [] });
+    await writePart(process.argv[at + 1], await collectCareerPages(previous.jobs, await readJson('data/careers-cache.json', {})));
+  } else {
+    const { jobs } = await collectCareerPages([], {});
+    for (const j of jobs) console.log(`${j.level.padEnd(7)} ${j.category.padEnd(9)} ${j.company} | ${j.title} | ${j.url}`);
+  }
 }
