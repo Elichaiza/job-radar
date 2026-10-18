@@ -266,6 +266,12 @@
   "token": "96B41ED041ED12D654C3388241ED12D654C3"
  },
  {
+  "name": "BlueGreen Water Technologies",
+  "ats": "comeet",
+  "slug": "E6.00D",
+  "token": "6ED298EDDA37686ED37681BB437686ED3E55"
+ },
+ {
   "name": "Bond Sports",
   "ats": "comeet",
   "slug": "F7.009",
@@ -329,6 +335,12 @@
   "ats": "comeet",
   "slug": "C0.008",
   "token": "C8320190002581902584B0708"
+ },
+ {
+  "name": "CHEQ",
+  "ats": "comeet",
+  "slug": "65.005",
+  "token": "5651AF92B280102F565565205E1594205E"
  },
  {
   "name": "Cisco",
@@ -449,6 +461,17 @@
   "token": "92836F05268401812501250092836F00"
  },
  {
+  "name": "DoubleVerify",
+  "ats": "workday",
+  "slug": "doubleverify.wd5/DV_Careers"
+ },
+ {
+  "name": "Draftt",
+  "ats": "comeet",
+  "slug": "3A.00F",
+  "token": "A3F47B928FC05C37147E28FC51F8A3F0"
+ },
+ {
   "name": "Driivz",
   "ats": "comeet",
   "slug": "C4.00B",
@@ -546,6 +569,23 @@
   "slug": "finout"
  },
  {
+  "name": "Flex",
+  "ats": "workday",
+  "slug": "flextronics.wd1/Careers"
+ },
+ {
+  "name": "Flexor",
+  "ats": "comeet",
+  "slug": "F9.006",
+  "token": "9F645BA1DE213EC31CE1DE2059A613EC3BC4"
+ },
+ {
+  "name": "flo Optics",
+  "ats": "comeet",
+  "slug": "EA.00E",
+  "token": "AEE4C824194625E625E15DC625E02BB80"
+ },
+ {
   "name": "Forter",
   "ats": "greenhouse",
   "slug": "forter"
@@ -579,6 +619,12 @@
   "slug": "gitlab"
  },
  {
+  "name": "Global-e",
+  "ats": "comeet",
+  "slug": "62.002",
+  "token": "262988131015727264C41572E4C10AE10AE"
+ },
+ {
   "name": "Gong",
   "ats": "greenhouse",
   "slug": "gongio"
@@ -610,6 +656,12 @@
   "name": "Guardz",
   "ats": "greenhouse",
   "slug": "guardz"
+ },
+ {
+  "name": "GYTPOL",
+  "ats": "comeet",
+  "slug": "CA.000",
+  "token": "AC04B4040802B0035C04B4035C0AC035C060C0"
  },
  {
   "name": "Harmonya Technologies",
@@ -723,6 +775,11 @@
   "name": "Island",
   "ats": "greenhouse",
   "slug": "island"
+ },
+ {
+  "name": "Jabil",
+  "ats": "workday",
+  "slug": "jabil.wd5/Jabil_Careers"
  },
  {
   "name": "Jether Energy",
@@ -857,6 +914,12 @@
   "token": "3E81388FA0BB83E8FA0BB813881F401B58"
  },
  {
+  "name": "MDClone",
+  "ats": "comeet",
+  "slug": "66.004",
+  "token": "6642658664265826580CC800CC8"
+ },
+ {
   "name": "Medtronic",
   "ats": "workday",
   "slug": "medtronic.wd1/MedtronicCareers"
@@ -930,6 +993,12 @@
   "name": "Moon Active",
   "ats": "ashby",
   "slug": "moonactive"
+ },
+ {
+  "name": "Moonshot Marketing",
+  "ats": "comeet",
+  "slug": "87.005",
+  "token": "7852D1E168F43AD2D1E2D1E168F1E1434A32599"
  },
  {
   "name": "Motorola Solutions",
@@ -1172,6 +1241,11 @@
   "token": "81C30A8288C1854103881C40E040E048FC288C"
  },
  {
+  "name": "Proofpoint",
+  "ats": "workday",
+  "slug": "proofpoint.wd5/proofpointcareers"
+ },
+ {
   "name": "proteanTecs",
   "ats": "comeet",
   "slug": "D5.00E",
@@ -1287,6 +1361,11 @@
   "slug": "scaleops"
  },
  {
+  "name": "SciPlay",
+  "ats": "workday",
+  "slug": "lnw.wd5/SciPlayExternalCareersSite"
+ },
+ {
   "name": "SeatPick",
   "ats": "ashby",
   "slug": "seatpick"
@@ -1344,6 +1423,12 @@
   "ats": "comeet",
   "slug": "22.00A",
   "token": "22A8A81150454CFC115022AAD2F26137A"
+ },
+ {
+  "name": "Smart Shooter",
+  "ats": "comeet",
+  "slug": "0B.00A",
+  "token": "B0A4D464D46211EB0A4D46635A635AB0A211E"
  },
  {
   "name": "Snappy Gifts",
@@ -1420,6 +1505,12 @@
   "name": "Tenable",
   "ats": "greenhouse",
   "slug": "tenableinc"
+ },
+ {
+  "name": "Terra Security",
+  "ats": "comeet",
+  "slug": "1B.006",
+  "token": "B164D9A4D9A2C58162C376E162C0162C2C58"
  },
  {
   "name": "Terrific",
@@ -1588,6 +1679,12 @@
   "ats": "comeet",
   "slug": "F6.003",
   "token": "6F329B2DE6379829B229B2037983E8B3E8B"
+ },
+ {
+  "name": "Winbond",
+  "ats": "comeet",
+  "slug": "9A.009",
+  "token": "A994A2F34FD4A2F1FCB5F615F61A9904A2F"
  },
  {
   "name": "Windward",
