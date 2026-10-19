@@ -290,6 +290,12 @@
   "token": "46615FE15FED321A6446601A64D322796"
  },
  {
+  "name": "BridgeWise",
+  "ats": "comeet",
+  "slug": "F9.009",
+  "token": "9F945CF1DEB1DEB027E431DD04FC81DEB"
+ },
+ {
   "name": "Cadence",
   "ats": "workday",
   "slug": "cadence.wd1/External_Careers"
@@ -378,6 +384,12 @@
   "name": "Cloudinary",
   "ats": "lever",
   "slug": "cloudinary"
+ },
+ {
+  "name": "Clover Security",
+  "ats": "comeet",
+  "slug": "7A.00A",
+  "token": "A7A4956346214F429E849561F6E1F6E014F4"
  },
  {
   "name": "Cognyte",
@@ -522,6 +534,12 @@
   "ats": "comeet",
   "slug": "58.00D",
   "token": "85D322E322E21743A8B42E8042E819174B45"
+ },
+ {
+  "name": "EasySend",
+  "ats": "comeet",
+  "slug": "D5.009",
+  "token": "5D91D3D34A134A134A12EC85D9118B1764118B"
  },
  {
   "name": "Eitan Medical",
@@ -689,6 +707,11 @@
   "name": "Guardz",
   "ats": "greenhouse",
   "slug": "guardz"
+ },
+ {
+  "name": "Guidde",
+  "ats": "greenhouse",
+  "slug": "guidde"
  },
  {
   "name": "GYTPOL",
@@ -1046,6 +1069,11 @@
   "slug": "mongodb"
  },
  {
+  "name": "MONTICELLOAM, LLC",
+  "ats": "greenhouse",
+  "slug": "monticelloam"
+ },
+ {
   "name": "Moon Active",
   "ats": "ashby",
   "slug": "moonactive"
@@ -1203,6 +1231,12 @@
   "ats": "comeet",
   "slug": "2B.008",
   "token": "B284E184E184E1837C82178B2837C821782178"
+ },
+ {
+  "name": "Orca AI",
+  "ats": "comeet",
+  "slug": "86.003",
+  "token": "68327126833A9B13891389138934182D95683"
  },
  {
   "name": "Orca Security",
@@ -1578,6 +1612,12 @@
   "name": "Tenable",
   "ats": "greenhouse",
   "slug": "tenableinc"
+ },
+ {
+  "name": "TeraGen",
+  "ats": "comeet",
+  "slug": "39.00A",
+  "token": "93A375C530A530A49D049D02E22024E824E8"
  },
  {
   "name": "Terra Security",
