@@ -10,6 +10,7 @@ import { collectLinkedIn } from './linkedin.mjs';
 import { collectCareerPages } from './careers.mjs';
 import { readParts } from './parts.mjs';
 import { collectDrushim } from './drushim.mjs';
+import { findSites } from './sites.mjs';
 
 const file = (p) => new URL(`../${p}`, import.meta.url);
 const readJson = async (p, fallback) => {
@@ -126,21 +127,26 @@ const namedAfter = (b) => b.name.toLowerCase().split(/[^a-z0-9]+/)
   .some((w) => w.length >= 3 && !GENERIC.test(w) && b.slug.toLowerCase().includes(w));
 const onBoard = new Set(companies.map((c) => `${c.ats}/${c.slug}`));
 const onBoardNames = new Set(companies.map((c) => c.name.toLowerCase()));
+// Boards checked and turned down are not checked again for a month, so each
+// run gets to boards it has not seen.
+const sitesCache = await readJson('data/sites-cache.json', {});
+const rejectedBoards = sitesCache.boards ||= {};
+for (const [key, date] of Object.entries(rejectedBoards)) if (Date.now() - new Date(date) > 30 * 86400000) delete rejectedBoards[key];
 const newBoards = [...new Map((careers.boards || [])
   .filter((b) => (b.ats === 'comeet' ? b.token : namedAfter(b)))
-  .filter((b) => !onBoard.has(`${b.ats}/${b.slug}`) && !onBoardNames.has(b.name.toLowerCase()))
+  .filter((b) => !onBoard.has(`${b.ats}/${b.slug}`) && !onBoardNames.has(b.name.toLowerCase()) && !rejectedBoards[`${b.ats}/${b.slug}`])
   .map((b) => [`${b.ats}/${b.slug}`, b])).values()].slice(0, MAX_NEW_BOARDS);
 let boardsAdded = 0;
 await pool(newBoards, 8, async ({ name, ats, slug, token }) => {
   const company = token ? { name, ats, slug, token } : { name, ats, slug };
   try {
     const result = await fetchCompany(company);
-    if (!result.israel) return;
+    if (!result.israel) { rejectedBoards[`${ats}/${slug}`] = now; return; }
     companies.push(company);
     jobs.push(...result.jobs);
     boardsAdded++;
     console.log(`board from careers page: ${name} ${ats}/${slug}, ${result.jobs.length} relevant jobs`);
-  } catch { /* not a working board */ }
+  } catch { rejectedBoards[`${ats}/${slug}`] = now; }
 });
 if (boardsAdded) companies.sort((a, b) => a.name.localeCompare(b.name));
 console.log(`job boards from careers pages: ${boardsAdded} added of ${newBoards.length} new`);
@@ -159,6 +165,15 @@ for (const job of [...careers.jobs, ...linkedin.jobs, ...drushim.jobs]) {
 }
 if (!linkedin.ok) failed.push('LinkedIn: no answer, kept the previous results');
 
+// Companies known only from LinkedIn or Drushim: their own sites join the
+// careers pages read from the next run on.
+const careerPages = await readJson('data/career-pages.json', []);
+for (const job of await findSites(jobs, careerPages, companies, sitesCache.companies ||= {})) {
+  if (taken.has(sameJob(job))) continue;
+  taken.add(sameJob(job));
+  jobs.push(job);
+}
+
 const unique = [...new Map(jobs.map((j) => [j.id, j])).values()];
 for (const job of unique) job.firstSeen = firstSeen.get(job.id) || now;
 unique.sort((a, b) => (b.posted || b.firstSeen).localeCompare(a.posted || a.firstSeen));
@@ -171,6 +186,8 @@ await writeJson('docs/data/requests.json', requests.filter((r) => r.by).slice(-3
   .map(({ name, by, status, israel, relevant, checkedAt }) => ({ name, by, status, israel, relevant, checkedAt })));
 await writeJson('data/linkedin-cache.json', linkedin.cache);
 await writeJson('data/careers-cache.json', careers.cache);
+await writeJson('data/career-pages.json', careerPages);
+await writeJson('data/sites-cache.json', sitesCache, 1);
 
 console.log(`${unique.length} jobs from ${companies.length} companies (${failed.length} failed)`);
 for (const f of failed) console.log(`  failed: ${f}`);
