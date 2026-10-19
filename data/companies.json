@@ -897,6 +897,12 @@
   "slug": "lemonade"
  },
  {
+  "name": "Leverate",
+  "ats": "comeet",
+  "slug": "02.004",
+  "token": "204810E1C1224204E1C204A14E1C0"
+ },
+ {
   "name": "Lightrun",
   "ats": "greenhouse",
   "slug": "lightrun"
