@@ -1051,6 +1051,12 @@
   "token": "7852D1E168F43AD2D1E2D1E168F1E1434A32599"
  },
  {
+  "name": "Morphisec",
+  "ats": "comeet",
+  "slug": "65.00C",
+  "token": "56C1B1C2B600208825F42B601B1C0AD8"
+ },
+ {
   "name": "Motorola Solutions",
   "ats": "workday",
   "slug": "motorolasolutions.wd5/Careers"
@@ -1390,6 +1396,11 @@
   "ats": "comeet",
   "slug": "66.009",
   "token": "66926766692CDF00669CD22CDF133B"
+ },
+ {
+  "name": "Rockwell Automation",
+  "ats": "workday",
+  "slug": "rockwellautomation.wd1/External_Rockwell_Automation"
  },
  {
   "name": "SafeBreach",
