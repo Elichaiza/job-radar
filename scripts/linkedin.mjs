@@ -40,10 +40,10 @@ const CACHE_DAYS = 45;
 // run reads a bounded number of new ones and the next run continues.
 const MAX_NEW_PER_RUN = Number(process.env.LINKEDIN_MAX_NEW) || 500;
 
-// The searches stop after this long, so a throttled run still finishes.
+// The searches stop after this long, so a throttled run still finishes,
+// and so does reading new postings.
 const SEARCH_MINUTES = 40;
-// ...and reading new postings stops this long after the start.
-const TOTAL_MINUTES = 70;
+const READ_MINUTES = 40;
 
 // The workflow runs several copies at once, each on its own machine (and so
 // its own address, which LinkedIn throttles separately). SHARD=i/n makes this
@@ -112,15 +112,12 @@ async function companyQueries() {
   return [...queries.slice(start), ...queries.slice(0, start)];
 }
 
-// previousJobs: last run's jobs; cache: { [linkedin id]: ISO date it was rejected }.
-// Returns { jobs, cache, ok }. When LinkedIn refuses to answer, ok is false and
-// the previous LinkedIn jobs are returned unchanged.
-export async function collectLinkedIn(previousJobs, cache = {}) {
-  const previous = new Map(previousJobs.filter((j) => j.id.startsWith('linkedin:')).map((j) => [j.id, j]));
+// Runs this shard's searches. Returns { cards, failed }: the postings seen and
+// whether some search did not finish (then jobs it may have found are kept).
+export async function searchLinkedIn() {
   const cards = new Map();
   let failedQueries = 0;
-  const started = Date.now();
-  const deadline = started + SEARCH_MINUTES * 60000;
+  const deadline = Date.now() + SEARCH_MINUTES * 60000;
   const queries = [...mine(QUERIES), ...await companyQueries()];
   let searched = 0;
   for (const query of queries) {
@@ -132,19 +129,33 @@ export async function collectLinkedIn(previousJobs, cache = {}) {
     for (const card of result.cards) cards.set(card.id, card);
     if (blocked) break;
   }
-  if (!cards.size) return { jobs: [...previous.values()], cache, ok: false };
+  console.log(`linkedin search${SHARDS > 1 ? ` ${SHARD + 1}/${SHARDS}` : ''}: ${searched} of ${queries.length} searches, ${cards.size} postings seen${failedQueries ? `, ${failedQueries} queries failed` : ''}`);
+  return { cards: [...cards.values()], failed: failedQueries > 0 };
+}
 
+// The searches of all shards overlap a lot, so the postings they saw are
+// pooled and each one is read by a single shard: the one its id falls to.
+export const ownedBy = (id) => Number(BigInt(id) % BigInt(SHARDS)) === SHARD;
+
+// cards: postings seen; previousJobs: last run's jobs; cache: { [linkedin id]:
+// ISO date it was rejected }; failed: some search did not finish. Returns
+// { jobs, cache, ok }. With no cards (LinkedIn refused to answer), ok is false
+// and the previous LinkedIn jobs are returned unchanged.
+export async function readLinkedIn(cards, previousJobs, cache = {}, failed = false) {
+  const previous = new Map(previousJobs.filter((j) => j.id.startsWith('linkedin:')).map((j) => [j.id, j]));
+  if (!cards.length) return { jobs: [...previous.values()], cache, ok: false };
+  const started = Date.now();
   const now = new Date().toISOString();
   const jobs = [];
   let fetched = 0;
   // With a bounded number of reads per run, embedded postings go first.
   const embeddedFirst = (card) => (categorize(card.title) === 'Embedded' ? 0 : 1);
-  for (const card of [...cards.values()].sort((a, b) => embeddedFirst(a) - embeddedFirst(b))) {
+  for (const card of [...cards].sort((a, b) => embeddedFirst(a) - embeddedFirst(b))) {
     const id = `linkedin:${card.id}`;
     if (previous.has(id)) { jobs.push(previous.get(id)); continue; }
     if (cache[card.id] || !isTechTitle(card.title) || isSeniorTitle(card.title)) continue;
 
-    const outOfTime = Date.now() > started + TOTAL_MINUTES * 60000;
+    const outOfTime = Date.now() > started + READ_MINUTES * 60000;
     const html = blocked || outOfTime || fetched >= MAX_NEW_PER_RUN ? null : await get(`${DETAIL}/${card.id}`);
     if (html == null) continue; // try again next run
     fetched++;
@@ -168,22 +179,41 @@ export async function collectLinkedIn(previousJobs, cache = {}) {
       ...tags,
     });
   }
-  // A query that failed half-way may hide jobs that are still open.
-  if (failedQueries) for (const [id, job] of previous) if (!jobs.some((j) => j.id === id)) jobs.push(job);
+  // A search that failed half-way may hide jobs that are still open.
+  if (failed) for (const [id, job] of previous) if (!jobs.some((j) => j.id === id)) jobs.push(job);
 
   const cutoff = Date.now() - CACHE_DAYS * 86400000;
   for (const [id, date] of Object.entries(cache)) if (new Date(date) < cutoff) delete cache[id];
-  console.log(`linkedin${SHARDS > 1 ? ` ${SHARD + 1}/${SHARDS}` : ''}: ${searched} of ${queries.length} searches, ${cards.size} postings seen, ${fetched} new ones read, ${jobs.length} kept${failedQueries ? `, ${failedQueries} queries failed` : ''}`);
+  console.log(`linkedin read${SHARDS > 1 ? ` ${SHARD + 1}/${SHARDS}` : ''}: ${cards.length} postings, ${fetched} new ones read, ${jobs.length} kept`);
   return { jobs, cache, ok: true };
 }
 
-// node scripts/linkedin.mjs [--out <file>]: with --out, one shard's part for collect.mjs.
+export async function collectLinkedIn(previousJobs, cache = {}) {
+  const { cards, failed } = await searchLinkedIn();
+  return readLinkedIn(cards, previousJobs, cache, failed);
+}
+
+// In the workflow:
+//   node scripts/linkedin.mjs --cards <file>             this shard's searches
+//   node scripts/linkedin.mjs --out <file> --pool <dir>  reads the postings that fall
+//                                                        to this shard; the part for collect.mjs
+// With neither, searches and reads everything and prints what it kept.
 if (process.argv[1]?.replace(/\\/g, '/').endsWith('scripts/linkedin.mjs')) {
-  const at = process.argv.indexOf('--out');
-  if (at > 0) {
-    const { readJson, writePart } = await import('./parts.mjs');
-    const previous = await readJson('docs/data/jobs.json', { jobs: [] });
-    await writePart(process.argv[at + 1], await collectLinkedIn(previous.jobs, await readJson('data/linkedin-cache.json', {})));
+  const arg = (name) => { const at = process.argv.indexOf(name); return at > 0 ? process.argv[at + 1] : null; };
+  const { readJson, writePart } = await import('./parts.mjs');
+  if (arg('--cards')) {
+    await writePart(arg('--cards'), await searchLinkedIn());
+  } else if (arg('--out')) {
+    const { readdir, readFile } = await import('node:fs/promises');
+    const dir = arg('--pool');
+    const files = (await readdir(dir).catch(() => [])).filter((f) => /^cards-\d+\.json$/.test(f));
+    const searches = await Promise.all(files.map(async (f) => JSON.parse(await readFile(`${dir}/${f}`, 'utf8'))));
+    const cards = [...new Map(searches.flatMap((s) => s.cards).map((c) => [c.id, c])).values()];
+    // A search shard that left nothing, or stopped half-way, may hide jobs that are still open.
+    const failed = files.length < SHARDS || searches.some((s) => s.failed);
+    const previous = (await readJson('docs/data/jobs.json', { jobs: [] })).jobs
+      .filter((j) => j.id.startsWith('linkedin:') && ownedBy(j.id.slice('linkedin:'.length)));
+    await writePart(arg('--out'), await readLinkedIn(cards.filter((c) => ownedBy(c.id)), previous, await readJson('data/linkedin-cache.json', {}), failed));
   } else {
     const { jobs } = await collectLinkedIn([], {});
     for (const j of jobs) console.log(`${j.level.padEnd(7)} ${j.category.padEnd(9)} ${j.company} | ${j.title} | ${j.location}`);

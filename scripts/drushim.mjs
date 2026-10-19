@@ -89,7 +89,14 @@ export async function drushimPosting(url) {
   return htmlToText(`${content.Name || ''}\n${content.Description || ''}\n${content.Requirements || ''}`);
 }
 
+// node scripts/drushim.mjs [--out <file>]: with --out, the part for collect.mjs.
 if (process.argv[1]?.replace(/\\/g, '/').endsWith('scripts/drushim.mjs')) {
+  const at = process.argv.indexOf('--out');
+  if (at > 0) {
+    const { readJson, writePart } = await import('./parts.mjs');
+    await writePart(process.argv[at + 1], await collectDrushim((await readJson('docs/data/jobs.json', { jobs: [] })).jobs));
+    process.exit(0);
+  }
   const { jobs } = await collectDrushim();
   for (const j of jobs) console.log(`${j.level.padEnd(7)} ${j.category.padEnd(9)} ${j.company} | ${j.title} | ${j.location}`);
 }

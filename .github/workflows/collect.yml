@@ -26,30 +26,88 @@ env:
   SHARDS: 4
 
 jobs:
-  part:
+  # LinkedIn's searches overlap a lot, so they run first and the postings they
+  # saw are pooled; then each machine reads only the postings that fall to it.
+  search:
     strategy:
       fail-fast: false
       matrix:
-        source: [linkedin, careers]
         shard: [0, 1, 2, 3] # one per SHARDS
     runs-on: ubuntu-latest
-    timeout-minutes: 90
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - run: node scripts/${{ matrix.source }}.mjs --out parts/${{ matrix.source }}-${{ matrix.shard }}.json
+      - run: node scripts/linkedin.mjs --cards cards/cards-${{ matrix.shard }}.json
         env:
           SHARD: ${{ matrix.shard }}/${{ env.SHARDS }}
       - uses: actions/upload-artifact@v4
         with:
-          name: part-${{ matrix.source }}-${{ matrix.shard }}
+          name: cards-${{ matrix.shard }}
+          path: cards/
+          retention-days: 1
+
+  read:
+    needs: search
+    if: ${{ !cancelled() }}
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0, 1, 2, 3]
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: actions/download-artifact@v4
+        continue-on-error: true
+        with:
+          pattern: cards-*
+          path: cards
+          merge-multiple: true
+      - run: node scripts/linkedin.mjs --out parts/linkedin-${{ matrix.shard }}.json --pool cards
+        env:
+          SHARD: ${{ matrix.shard }}/${{ env.SHARDS }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: part-linkedin-${{ matrix.shard }}
+          path: parts/
+          retention-days: 1
+
+  # The other sources run meanwhile.
+  part:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { name: careers-0, run: careers, shard: 0 }
+          - { name: careers-1, run: careers, shard: 1 }
+          - { name: careers-2, run: careers, shard: 2 }
+          - { name: careers-3, run: careers, shard: 3 }
+          - { name: drushim, run: drushim, shard: 0 }
+          - { name: sites, run: sites, shard: 0 }
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node scripts/${{ matrix.run }}.mjs --out parts/${{ matrix.name }}.json
+        env:
+          SHARD: ${{ matrix.shard }}/${{ env.SHARDS }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: part-${{ matrix.name }}
           path: parts/
           retention-days: 1
 
   collect:
-    needs: part
+    needs: [read, part]
     # A failed shard keeps its previous jobs; the rest still count.
     if: ${{ !cancelled() }}
     runs-on: ubuntu-latest

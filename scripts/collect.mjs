@@ -156,7 +156,12 @@ console.log(`job boards from careers pages: ${boardsAdded} added of ${newBoards.
 const sameJob = (j) => `${j.company.trim().split(/\s+/)[0]}|${j.title}`.toLowerCase().replace(/[^a-z0-9א-ת|]/g, '');
 const taken = new Set(jobs.map(sameJob));
 // Drushim comes last: the same opening from the company itself is better.
-const drushim = await collectDrushim(previous.jobs);
+// In the workflow Drushim and the company sites ran beside the other parts.
+// (A part that is missing reads as null: its machine failed.)
+const readJsonFile = (p) => readJson(p, null);
+const drushim = process.env.PARTS
+  ? await readJsonFile(`${process.env.PARTS}/drushim.json`) || { jobs: previous.jobs.filter((j) => j.id.startsWith('drushim:')), ok: false }
+  : await collectDrushim(previous.jobs);
 if (!drushim.ok) failed.push('Drushim: no answer, kept the previous results');
 for (const job of [...careers.jobs, ...linkedin.jobs, ...drushim.jobs]) {
   if (taken.has(sameJob(job))) continue;
@@ -168,7 +173,19 @@ if (!linkedin.ok) failed.push('LinkedIn: no answer, kept the previous results');
 // Companies known only from LinkedIn or Drushim: their own sites join the
 // careers pages read from the next run on.
 const careerPages = await readJson('data/career-pages.json', []);
-for (const job of await findSites(jobs, careerPages, companies, sitesCache.companies ||= {})) {
+let siteJobs;
+if (process.env.PARTS) {
+  const sites = await readJsonFile(`${process.env.PARTS}/sites.json`);
+  const hosts = new Set(careerPages.map((c) => c.url));
+  const boardKeys = new Set(companies.map((c) => `${c.ats}/${c.slug}`));
+  careerPages.push(...(sites?.careerPages || []).filter((c) => !hosts.has(c.url)));
+  companies.push(...(sites?.companies || []).filter((c) => !boardKeys.has(`${c.ats}/${c.slug}`)));
+  if (sites) sitesCache.companies = sites.cache;
+  siteJobs = sites?.jobs || [];
+} else {
+  siteJobs = await findSites(jobs, careerPages, companies, sitesCache.companies ||= {});
+}
+for (const job of siteJobs) {
   if (taken.has(sameJob(job))) continue;
   taken.add(sameJob(job));
   jobs.push(job);

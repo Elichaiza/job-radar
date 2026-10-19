@@ -97,3 +97,17 @@ export async function findSites(jobs, careerPages, companies, cache) {
   console.log(`company sites: ${candidates.size} companies not on any list, ${Math.min(candidates.size, MAX_PER_RUN)} looked up, ${sites} sites and ${boards} job boards added`);
   return found;
 }
+
+// node scripts/sites.mjs --out <file>: in the workflow this runs beside the
+// other collectors, on last run's jobs; collect.mjs adds what it found.
+if (process.argv[1]?.replace(/\\/g, '/').endsWith('scripts/sites.mjs')) {
+  const { readJson, writePart } = await import('./parts.mjs');
+  const careerPages = await readJson('data/career-pages.json', []);
+  const companies = await readJson('data/companies.json', []);
+  const cache = (await readJson('data/sites-cache.json', {})).companies || {};
+  const [pages, boards] = [careerPages.length, companies.length];
+  const jobs = await findSites((await readJson('docs/data/jobs.json', { jobs: [] })).jobs, careerPages, companies, cache);
+  await writePart(process.argv[process.argv.indexOf('--out') + 1], {
+    careerPages: careerPages.slice(pages), companies: companies.slice(boards), jobs, cache,
+  });
+}
