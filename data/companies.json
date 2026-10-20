@@ -1712,6 +1712,11 @@
   "token": "6A527DED4A6A52E8321396A503528D4A"
  },
  {
+  "name": "TSMG Holding",
+  "ats": "lever",
+  "slug": "tsmg"
+ },
+ {
   "name": "Unit",
   "ats": "ashby",
   "slug": "unit"
@@ -1792,6 +1797,11 @@
   "ats": "comeet",
   "slug": "C7.009",
   "token": "7C92EB61F241F244611F923E483E482EB63E48"
+ },
+ {
+  "name": "WeDev Technologies",
+  "ats": "greenhouse",
+  "slug": "wedev"
  },
  {
   "name": "WeTrip",
