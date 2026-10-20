@@ -398,6 +398,12 @@
   "token": "2F9EDD2F92F911D61AC12F914CF11D62F9"
  },
  {
+  "name": "Commit",
+  "ats": "comeet",
+  "slug": "76.008",
+  "token": "67826D067833C0CF002D48020581368"
+ },
+ {
   "name": "Connecteam",
   "ats": "greenhouse",
   "slug": "connecteam"
@@ -562,6 +568,12 @@
   "ats": "comeet",
   "slug": "F8.007",
   "token": "8F735CA47B835CA3EC111EE1AE535CA11EE8F7"
+ },
+ {
+  "name": "Enlight Renewable Energy Ltd (ENLT)",
+  "ats": "comeet",
+  "slug": "99.006",
+  "token": "996431A9961CC2398456465646132C2FEE996"
  },
  {
   "name": "eToro",
