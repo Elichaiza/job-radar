@@ -1461,6 +1461,11 @@
   "slug": "rockwellautomation.wd1/External_Rockwell_Automation"
  },
  {
+  "name": "RWS",
+  "ats": "lever",
+  "slug": "rws"
+ },
+ {
   "name": "SafeBreach",
   "ats": "greenhouse",
   "slug": "safebreach"
