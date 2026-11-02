@@ -15,6 +15,7 @@
     </div>
     <div class="top-actions">
       <button id="open-applied" class="btn only-narrow">הגשתי (<span id="applied-count-top">0</span>)</button>
+      <button id="open-paste" class="btn" hidden>הכן קו"ח לפי תיאור</button>
       <button id="open-settings" class="btn">⚙ חיבור</button>
     </div>
   </header>
@@ -102,6 +103,25 @@
         <button class="btn" value="cancel">סגור</button>
         <button id="cv-download" class="btn primary" type="button" hidden>הורד PDF</button>
       </div>
+    </form>
+  </dialog>
+
+  <dialog id="paste">
+    <form id="paste-form" method="dialog">
+      <h2>קו"ח לפי תיאור משרה</h2>
+      <p class="muted">הדבק את תיאור המשרה. הקו"ח יוכן כמו בכפתור "קו"ח מותאם", בלי זכר לחברה או למשרה, ועם דוח פערים.</p>
+      <div class="row">
+        <input id="paste-title" type="text" placeholder="שם המשרה (לא חובה)" autocomplete="off" maxlength="120">
+        <input id="paste-company" type="text" placeholder="שם החברה (לא חובה)" autocomplete="off" maxlength="120">
+      </div>
+      <textarea id="paste-text" rows="12" placeholder="תיאור המשרה והדרישות…" required minlength="80" maxlength="15000"></textarea>
+      <p id="paste-status" class="muted" hidden></p>
+      <div class="row end">
+        <button class="btn" value="cancel" formnovalidate>סגור</button>
+        <button id="paste-submit" class="btn primary" type="submit" value="default">הכן קו"ח</button>
+      </div>
+      <h3 class="paste-list-head">קו"ח שהוכנו מתיאור</h3>
+      <ul id="paste-list" class="side-list"></ul>
     </form>
   </dialog>
 

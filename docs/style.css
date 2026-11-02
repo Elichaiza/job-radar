@@ -144,6 +144,16 @@ dialog::backdrop { background: rgba(0, 0, 0, .45); }
 dialog form { display: flex; flex-direction: column; gap: 8px; }
 
 dialog#cv { width: min(640px, calc(100vw - 32px)); }
+dialog#paste { width: min(720px, calc(100vw - 32px)); }
+#paste textarea {
+  width: 100%; box-sizing: border-box; resize: vertical; font: inherit; font-size: 14px; padding: 8px 10px;
+  border: 1px solid var(--line); border-radius: 8px; background: var(--bg, var(--panel)); color: var(--text); unicode-bidi: plaintext;
+}
+#paste .row input { flex: 1; min-width: 0; }
+.paste-list-head { font-size: 14px; margin: 10px 0 0; }
+#paste-list { max-height: 30vh; border-top: 1px solid var(--line); }
+.paste-item { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.paste-name { font-weight: 600; unicode-bidi: plaintext; }
 .cv-body { max-height: 60vh; overflow-y: auto; font-size: 14px; }
 .cv-body h3 { font-size: 14px; margin: 14px 0 4px; }
 .cv-list { margin: 0; padding-inline-start: 20px; }

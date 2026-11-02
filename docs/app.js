@@ -296,6 +296,7 @@ function renderSide() {
 
 function render() {
   store.set('filters', filters);
+  $('open-paste').hidden = !token;
   const count = (key, value, ignore) => jobs.filter((j) => j[key] === value && matches(j, { ignore })).length;
   renderChips($('category-chips'), CATEGORIES, null, filters.categories, (c) => count('category', c, 'category'));
   renderChips($('level-chips'), LEVELS, LEVEL_LABELS, filters.levels, (l) => count('level', l, 'level'));
@@ -512,6 +513,7 @@ function cvButton(job) {
 }
 
 function refreshCvButtons(slug) {
+  if (slug.startsWith(PASTED_SLUG)) return renderPasted();
   const job = jobs.find((j) => cvSlug(j.id) === slug);
   if (!job) return;
   for (const button of document.querySelectorAll(`[data-cv="${CSS.escape(slug)}"]`)) button.replaceWith(cvButton(job));
@@ -527,6 +529,7 @@ async function loadCvs() {
     cvReady = new Set();
   }
   render();
+  loadPasted();
   pollCvs();
 }
 
@@ -537,9 +540,12 @@ async function startCv(job) {
   store.set('cvPending', cvPending);
   refreshCvButtons(slug);
   try {
+    const inputs = { job_id: job.id, url: job.url || '', title: job.title, company: job.company || '', location: job.location || '' };
+    // A pasted job's text goes along; made on another device, it is read back from its CV.
+    if (job.id.startsWith(PASTED)) inputs.description = job.description || (await readFile(STATE_REPO, `tailored/${slug}/posting.json`, {})).data.text || '';
     await github(`/repos/${OWNER}/${STATE_REPO}/actions/workflows/${CV_WORKFLOW}/dispatches`, {
       method: 'POST',
-      body: JSON.stringify({ ref: 'main', inputs: { job_id: job.id, url: job.url, title: job.title, company: job.company, location: job.location || '' } }),
+      body: JSON.stringify({ ref: 'main', inputs }),
     });
     pollCvs();
   } catch (err) {
@@ -581,7 +587,8 @@ const FIT_LABELS = { high: 'התאמה גבוהה', medium: 'התאמה בינו
 async function openCv(job) {
   const slug = cvSlug(job.id);
   const body = $('cv-body');
-  $('cv-title').textContent = `${job.title} · ${job.company}`;
+  $('cv-title').textContent = [job.title, job.company].filter(Boolean).join(' · ');
+  if ($('paste').open) $('paste').close();
   body.replaceChildren(el('p', { class: 'muted', text: 'טוען…' }));
   $('cv-download').hidden = true;
   $('cv-download').onclick = () => downloadCv(slug);
@@ -625,6 +632,81 @@ async function downloadCv(slug) {
     $('cv-body').prepend(el('p', { class: 'cv-error', text: 'ההורדה נכשלה. נסה שוב.' }));
   }
 }
+
+// --- CVs from a pasted job description -----------------------------------------
+// The same workflow, given the posting's text instead of a link. The CV is
+// saved under tailored/pasted_<time>/ together with the text it was made from.
+
+const PASTED = 'pasted:';
+const PASTED_SLUG = cvSlug(PASTED);
+let pastedJobs = store.get('pastedJobs', []); // [{ id, title, company, description }], newest first
+
+function savePasted() {
+  // The texts stay on this device for "make again"; the repo keeps them too.
+  pastedJobs = pastedJobs.slice(0, 30);
+  store.set('pastedJobs', pastedJobs);
+}
+
+// CVs made on another device are known by their report.
+async function loadPasted() {
+  const known = new Set(pastedJobs.map((j) => cvSlug(j.id)));
+  const missing = [...cvReady].filter((slug) => slug.startsWith(PASTED_SLUG) && !known.has(slug));
+  for (const slug of missing) {
+    try {
+      const job = (await readCvReport(slug))?.job;
+      if (job?.id) pastedJobs.push({ id: job.id, title: job.title, company: job.company });
+    } catch { /* next time */ }
+  }
+  pastedJobs.sort((a, b) => b.id.localeCompare(a.id));
+  savePasted();
+  renderPasted();
+}
+
+function renderPasted() {
+  const items = pastedJobs.map((job) => {
+    const slug = cvSlug(job.id);
+    const when = ago(new Date(Number(job.id.slice(PASTED.length))).toISOString());
+    const action = cvPending[slug]
+      ? el('span', { class: 'muted', text: 'מכין…' })
+      : cvReady.has(slug)
+        ? el('button', { class: 'btn done', type: 'button', text: 'פתח', onclick: () => openCv(job) })
+        : el('button', { class: 'btn', type: 'button', text: 'הכן שוב', onclick: () => startCv(job) });
+    return el('li', { class: 'paste-item' },
+      el('div', {},
+        el('bdi', { class: 'paste-name', text: job.title }),
+        el('div', { class: 'muted', text: [job.company, when].filter(Boolean).join(' · ') })),
+      action);
+  });
+  $('paste-list').replaceChildren(...(items.length ? items : [el('li', { class: 'muted', text: 'עוד לא הוכנו.' })]));
+}
+
+// A title for a posting pasted without one: its first line.
+const firstLine = (text) => (text.split('\n').map((l) => l.trim()).find(Boolean) || 'משרה').slice(0, 90);
+
+$('open-paste').addEventListener('click', () => {
+  $('paste-status').hidden = true;
+  renderPasted();
+  $('paste').showModal();
+});
+$('paste-form').addEventListener('submit', (event) => {
+  if (event.submitter?.value === 'cancel') return;
+  event.preventDefault();
+  const description = $('paste-text').value.trim();
+  if (description.length < 80) return;
+  const job = {
+    id: `${PASTED}${Date.now()}`,
+    title: $('paste-title').value.trim() || firstLine(description),
+    company: $('paste-company').value.trim(),
+    description,
+  };
+  pastedJobs.unshift(job);
+  savePasted();
+  startCv(job);
+  renderPasted();
+  for (const id of ['paste-title', 'paste-company', 'paste-text']) $(id).value = '';
+  $('paste-status').textContent = 'מכין את הקו"ח, זה לוקח בערך 2–3 דקות. אפשר לסגור את החלון; הוא יופיע ברשימה למטה.';
+  $('paste-status').hidden = false;
+});
 
 // --- accounts ---------------------------------------------------------------
 
