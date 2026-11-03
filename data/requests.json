@@ -10,7 +10,8 @@
  },
  {
   "name": "elbit",
-  "status": "pending",
-  "requestedAt": "2026-11-03T07:59:59.002Z"
+  "status": "not_found",
+  "requestedAt": "2026-11-03T07:59:59.002Z",
+  "checkedAt": "2026-11-03T08:25:07.486Z"
  }
 ]
