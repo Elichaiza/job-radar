@@ -7,5 +7,10 @@
   "israel": 2,
   "relevant": 0,
   "board": "workday/paloaltonetworks.wd5/panwexternalcareers"
+ },
+ {
+  "name": "elbit",
+  "status": "pending",
+  "requestedAt": "2026-11-03T07:59:59.002Z"
  }
 ]
