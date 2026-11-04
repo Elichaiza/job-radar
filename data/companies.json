@@ -425,6 +425,11 @@
   "slug": "crowdstrike.wd5/crowdstrikecareers"
  },
  {
+  "name": "Crusoe",
+  "ats": "ashby",
+  "slug": "Crusoe"
+ },
+ {
   "name": "CTERA Networks",
   "ats": "comeet",
   "slug": "A0.003",
@@ -1931,5 +1936,10 @@
   "name": "Zscaler",
   "ats": "greenhouse",
   "slug": "zscaler"
+ },
+ {
+  "name": "Ping Identity",
+  "ats": "greenhouse",
+  "slug": "pingidentity"
  }
 ]
