@@ -51,6 +51,11 @@ const READ_MINUTES = 40;
 const [SHARD, SHARDS] = (process.env.SHARD || '0/1').split('/').map(Number);
 const mine = (list) => list.filter((_, i) => i % SHARDS === SHARD);
 
+// QUICK=1: the hourly run, which searches only the last day's postings and so
+// takes a few pages per search. Jobs it does not see are kept; the daily full
+// run is the one that drops postings that closed.
+const QUICK = process.env.QUICK === '1';
+
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 let blocked = false;
@@ -88,7 +93,7 @@ function parseCards(html) {
 async function search(query) {
   const cards = [];
   for (let page = 0; page < MAX_PAGES; page++) {
-    const params = new URLSearchParams({ location: 'Israel', f_TPR: 'r2592000', ...query, start: String(page * PAGE_SIZE) });
+    const params = new URLSearchParams({ location: 'Israel', f_TPR: 'r2592000', ...query, ...(QUICK ? { f_TPR: 'r86400' } : {}), start: String(page * PAGE_SIZE) });
     const html = await get(`${SEARCH}?${params}`);
     if (html == null) return { cards, failed: true };
     const found = parseCards(html);
@@ -210,7 +215,7 @@ if (process.argv[1]?.replace(/\\/g, '/').endsWith('scripts/linkedin.mjs')) {
     const searches = await Promise.all(files.map(async (f) => JSON.parse(await readFile(`${dir}/${f}`, 'utf8'))));
     const cards = [...new Map(searches.flatMap((s) => s.cards).map((c) => [c.id, c])).values()];
     // A search shard that left nothing, or stopped half-way, may hide jobs that are still open.
-    const failed = files.length < SHARDS || searches.some((s) => s.failed);
+    const failed = QUICK || files.length < SHARDS || searches.some((s) => s.failed);
     const previous = (await readJson('docs/data/jobs.json', { jobs: [] })).jobs
       .filter((j) => j.id.startsWith('linkedin:') && ownedBy(j.id.slice('linkedin:'.length)));
     await writePart(arg('--out'), await readLinkedIn(cards.filter((c) => ownedBy(c.id)), previous, await readJson('data/linkedin-cache.json', {}), failed));

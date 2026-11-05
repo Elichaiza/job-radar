@@ -105,14 +105,15 @@ await pool(companies, 12, async (company) => {
 const linkedinCache = await readJson('data/linkedin-cache.json', {});
 const careersCache = await readJson('data/careers-cache.json', {});
 const shards = Number(process.env.SHARDS) || 1;
+const linkedinShards = Number(process.env.LINKEDIN_SHARDS) || shards;
 const [linkedin, careers] = process.env.PARTS
   ? await Promise.all([
-    readParts(process.env.PARTS, 'linkedin', shards, previous.jobs.filter((j) => j.id.startsWith('linkedin:')), linkedinCache),
+    readParts(process.env.PARTS, 'linkedin', linkedinShards, previous.jobs.filter((j) => j.id.startsWith('linkedin:')), linkedinCache),
     readParts(process.env.PARTS, 'careers', shards, previous.jobs.filter((j) => j.id.startsWith('site:')), careersCache),
   ])
   : await Promise.all([collectLinkedIn(previous.jobs, linkedinCache), collectCareerPages(previous.jobs, careersCache)]);
 for (const [name, part] of [['LinkedIn', linkedin], ['careers pages', careers]]) {
-  if (part.missing) failed.push(`${name}: ${part.missing} of ${shards} shards failed, kept their previous results`);
+  if (part.missing) failed.push(`${name}: ${part.missing} shards failed, kept their previous results`);
 }
 
 // Job boards that careers pages led to. Like the site's requests, a board is
