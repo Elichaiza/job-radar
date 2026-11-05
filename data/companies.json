@@ -1341,6 +1341,11 @@
   "slug": "philips.wd3/jobs-and-careers"
  },
  {
+  "name": "Ping Identity",
+  "ats": "greenhouse",
+  "slug": "pingidentity"
+ },
+ {
   "name": "Pipl",
   "ats": "comeet",
   "slug": "22.008",
@@ -1936,10 +1941,5 @@
   "name": "Zscaler",
   "ats": "greenhouse",
   "slug": "zscaler"
- },
- {
-  "name": "Ping Identity",
-  "ats": "greenhouse",
-  "slug": "pingidentity"
  }
 ]
