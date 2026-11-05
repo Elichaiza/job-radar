@@ -1,0 +1,74 @@
+name: Find companies' job boards
+
+# Looks for the job boards of the companies in data/directory.json, which no
+# other list here knows (scripts/directory.mjs). It runs apart from the hourly
+# collection, so that stays fast; boards it finds are read from the next run on.
+on:
+  workflow_dispatch:
+  schedule:
+    # Once a week, for companies that opened a board since they were checked.
+    - cron: '23 3 * * 6'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: directory
+  cancel-in-progress: false
+
+env:
+  SHARDS: 16
+
+jobs:
+  search:
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15] # one per SHARDS
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node scripts/directory.mjs --out parts/directory-${{ matrix.shard }}.json
+        env:
+          SHARD: ${{ matrix.shard }}/${{ env.SHARDS }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: directory-${{ matrix.shard }}
+          path: parts/
+          retention-days: 1
+
+  merge:
+    needs: search
+    if: ${{ !cancelled() }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: directory-*
+          path: parts
+          merge-multiple: true
+      - name: Add the boards found
+        run: |
+          git config user.name "job-radar-bot"
+          git config user.email "job-radar-bot@users.noreply.github.com"
+          # The hourly collection commits companies.json too: on a clash, start
+          # again from its version and add the boards to that.
+          for attempt in 1 2 3 4 5; do
+            git fetch origin main && git reset --hard origin/main
+            node scripts/directory.mjs --merge parts
+            git add data/companies.json data/directory-cache.json
+            git diff --cached --quiet && exit 0
+            git commit -m "Add companies' job boards from the directory"
+            git push && exit 0
+            sleep 20
+          done
+          exit 1
