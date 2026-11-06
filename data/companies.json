@@ -2519,5 +2519,10 @@
   "name": "Zscaler",
   "ats": "greenhouse",
   "slug": "zscaler"
+ },
+ {
+  "name": "Avon AI",
+  "ats": "greenhouse",
+  "slug": "avonai"
  }
 ]
