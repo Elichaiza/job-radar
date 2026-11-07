@@ -273,6 +273,11 @@
   "slug": "autods"
  },
  {
+  "name": "Avon AI",
+  "ats": "greenhouse",
+  "slug": "avonai"
+ },
+ {
   "name": "Axonius",
   "ats": "greenhouse",
   "slug": "axonius"
@@ -2519,10 +2524,5 @@
   "name": "Zscaler",
   "ats": "greenhouse",
   "slug": "zscaler"
- },
- {
-  "name": "Avon AI",
-  "ats": "greenhouse",
-  "slug": "avonai"
  }
 ]
