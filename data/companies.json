@@ -757,6 +757,11 @@
   "token": "82030C028A0186041001860186038E030C030C0"
  },
  {
+  "name": "EWOR",
+  "ats": "lever",
+  "slug": "ewor"
+ },
+ {
   "name": "EX.CO",
   "ats": "comeet",
   "slug": "F0.005",
@@ -2524,10 +2529,5 @@
   "name": "Zscaler",
   "ats": "greenhouse",
   "slug": "zscaler"
- },
- {
-  "name": "EWOR",
-  "ats": "lever",
-  "slug": "ewor"
  }
 ]
