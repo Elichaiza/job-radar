@@ -1956,6 +1956,11 @@
   "slug": "sentinellabs"
  },
  {
+  "name": "ServiceNow",
+  "ats": "smartrecruiters",
+  "slug": "servicenow"
+ },
+ {
   "name": "sett",
   "ats": "comeet",
   "slug": "4A.00B",
@@ -2529,10 +2534,5 @@
   "name": "Zscaler",
   "ats": "greenhouse",
   "slug": "zscaler"
- },
- {
-  "name": "ServiceNow",
-  "ats": "smartrecruiters",
-  "slug": "servicenow"
  }
 ]
