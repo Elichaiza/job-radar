@@ -97,7 +97,28 @@ export async function collectCareerPages(previousJobs, cache = {}) {
   const known = mine(companies.filter((c) => !c.home));
   const homes = mine(companies.filter((c) => c.home));
   const start = Math.floor(Math.random() * (homes.length || 1));
+  // One shard keeps running out of time: note which sites are slow, and which
+  // were being read whenever the whole process stood still.
+  const active = new Map();
+  const slow = [];
+  let tick = Date.now();
+  const watch = setInterval(() => {
+    const gap = Date.now() - tick;
+    if (gap > 5000) console.log(`careers: stood still ${Math.round(gap / 1000)}s while reading ${[...active.keys()].join(' ')}`);
+    tick = Date.now();
+  }, 1000);
   await pool([...known, ...homes.slice(start), ...homes.slice(0, start)], 10, async (company) => {
+    const began = Date.now();
+    active.set(company.url, began);
+    try { await readCompany(company); } finally {
+      active.delete(company.url);
+      if (Date.now() - began > 60000) slow.push(`${company.url} ${Math.round((Date.now() - began) / 1000)}s`);
+    }
+  });
+  clearInterval(watch);
+  if (slow.length) console.log(`careers: slow sites: ${slow.join(', ')}`);
+
+  async function readCompany(company) {
     const mine = () => [...previous.values()].filter((j) => j.company === company.name);
     // Out of time or the site is down: keep what this company had.
     if (Date.now() > deadline) { jobs.push(...mine()); return; }
@@ -134,7 +155,7 @@ ${p.html}`)); };
       if (!tags) { cache[link.url] = now; continue; }
       jobs.push({ id, company: company.name, title: link.title, location: 'Israel', url: link.url, posted: null, source: 'אתר החברה', ...tags });
     }
-  });
+  }
 
   const cutoff = Date.now() - CACHE_DAYS * 86400000;
   for (const [url, date] of Object.entries(cache)) if (new Date(date) < cutoff) delete cache[url];
