@@ -33,16 +33,19 @@ async function fetchPage(url) {
   } catch { return null; }
 }
 
-const stripCode = (html) => html.replace(/<(script|style|noscript|svg|template)\b[\s\S]*?<\/\1>/gi, ' ');
+// A link's text is bounded: on a big page full of unclosed <a> tags an
+// unbounded match scans to the end from every one of them and takes minutes.
+const LINK = /<a\b[^>]{0,2000}?href\s*=\s*["']([^"'#][^"']{0,2000})["'][^>]{0,2000}>([\s\S]{0,3000}?)<\/a>/gi;
+const stripCode = (html) => html.replace(/<(script|style|noscript|svg|template)\b[\s\S]{0,300000}?<\/\1>/gi, ' ');
 // Navigation and footers carry text ("20 years of innovation") that is not about the job.
-const stripChrome = (html) => stripCode(html).replace(/<(nav|header|footer|form)\b[\s\S]*?<\/\1>/gi, ' ');
+const stripChrome = (html) => stripCode(html).replace(/<(nav|header|footer|form)\b[\s\S]{0,100000}?<\/\1>/gi, ' ');
 const oneLine = (html) => htmlToText(html).replace(/\s+/g, ' ').trim();
 
 // Links on a careers page that look like openings: [{ title, url }].
 export function jobLinks(html, pageUrl) {
   const found = new Map();
   const page = new URL(pageUrl);
-  for (const m of stripCode(html).matchAll(/<a\b[^>]*?href\s*=\s*["']([^"'#][^"']*)["'][^>]*>([\s\S]*?)<\/a>/gi)) {
+  for (const m of stripCode(html).matchAll(LINK)) {
     let url;
     try { url = new URL(m[1].replace(/&amp;/g, '&'), pageUrl); } catch { continue; }
     if (!/^https?:$/.test(url.protocol) || (url.origin + url.pathname === page.origin + page.pathname && !url.search)) continue;
@@ -60,7 +63,7 @@ export function jobLinks(html, pageUrl) {
 
 // The homepage's link to the careers page, if it has one on a site we can read.
 function careersLink(html, pageUrl) {
-  for (const m of stripCode(html).matchAll(/<a\b[^>]*?href\s*=\s*["']([^"'#][^"']*)["'][^>]*>([\s\S]*?)<\/a>/gi)) {
+  for (const m of stripCode(html).matchAll(LINK)) {
     const text = oneLine(m[2]);
     if (text.length > 40 || !/\b(careers?|jobs|join us|join our team|open positions|we.re hiring|work with us)\b|קריירה|דרושים|משרות/i.test(`${text} ${m[1].slice(0, 80)}`)) continue;
     try {

@@ -3,6 +3,8 @@ name: Collect jobs
 on:
   schedule:
     # Every 20 minutes a quick run (LinkedIn's last day only); once a day a full one.
+    # GitHub often skips scheduled runs, so each run also starts the next one
+    # (see "next" below); these keep the chain going if it ever breaks.
     - cron: '7,27,47 * * * *'
     - cron: '57 0 * * *'
   workflow_dispatch:
@@ -19,6 +21,7 @@ on:
 
 permissions:
   contents: write
+  actions: write # to start the next run
 
 concurrency:
   group: collect
@@ -27,7 +30,7 @@ concurrency:
 env:
   # LinkedIn is searched by this many machines at once, and the careers pages
   # by SHARDS. Each has its own address, which LinkedIn throttles separately.
-  # (Together they stay within GitHub's 20 machines at a time.)
+  # (Together they come to about GitHub's 20 machines at a time.)
   LINKEDIN_SHARDS: 14
   SHARDS: 4
   QUICK: ${{ (github.event.schedule == '7,27,47 * * * *' || inputs.quick) && '1' || '0' }}
@@ -150,3 +153,21 @@ jobs:
             sleep 5
           done
           exit 1
+
+  # Starts the next run after a pause, so the jobs are at most about a quarter
+  # of an hour old. Only one run waits in the "collect" group at a time, so
+  # this never adds up to more than one chain of runs.
+  next:
+    needs: collect
+    if: ${{ !cancelled() }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - run: |
+          sleep 600
+          # The run that starts between 01:00 and 01:20 UTC is the day's full one.
+          QUICK=true
+          [ "$(date -u +%H)" = "01" ] && [ "$(date -u +%M)" -lt 20 ] && QUICK=false
+          gh workflow run collect.yml --repo "$GITHUB_REPOSITORY" -f quick=$QUICK
+        env:
+          GH_TOKEN: ${{ github.token }}
