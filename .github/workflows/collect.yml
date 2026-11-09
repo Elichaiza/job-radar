@@ -2,9 +2,9 @@ name: Collect jobs
 
 on:
   schedule:
-    # Every hour a quick run (LinkedIn's last day only); once a day a full one.
-    - cron: '17 * * * *'
-    - cron: '47 0 * * *'
+    # Every 20 minutes a quick run (LinkedIn's last day only); once a day a full one.
+    - cron: '7,27,47 * * * *'
+    - cron: '57 0 * * *'
   workflow_dispatch:
     inputs:
       quick: { description: Quick run (LinkedIn's last day only), type: boolean, default: false }
@@ -30,7 +30,7 @@ env:
   # (Together they stay within GitHub's 20 machines at a time.)
   LINKEDIN_SHARDS: 14
   SHARDS: 4
-  QUICK: ${{ (github.event.schedule == '17 * * * *' || inputs.quick) && '1' || '0' }}
+  QUICK: ${{ (github.event.schedule == '7,27,47 * * * *' || inputs.quick) && '1' || '0' }}
 
 jobs:
   # LinkedIn's searches overlap a lot, so they run first and the postings they
@@ -96,6 +96,7 @@ jobs:
           - { name: careers-2, run: careers, shard: 2 }
           - { name: careers-3, run: careers, shard: 3 }
           - { name: drushim, run: drushim, shard: 0 }
+          - { name: alljobs, run: alljobs, shard: 0 }
           - { name: sites, run: sites, shard: 0 }
     runs-on: ubuntu-latest
     timeout-minutes: 60

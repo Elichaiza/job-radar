@@ -10,6 +10,7 @@ import { collectLinkedIn } from './linkedin.mjs';
 import { collectCareerPages } from './careers.mjs';
 import { readParts } from './parts.mjs';
 import { collectDrushim } from './drushim.mjs';
+import { collectAllJobs } from './alljobs.mjs';
 import { findSites } from './sites.mjs';
 
 const file = (p) => new URL(`../${p}`, import.meta.url);
@@ -156,15 +157,19 @@ console.log(`job boards from careers pages: ${boardsAdded} added of ${newBoards.
 // LinkedIn lists per city into one.
 const sameJob = (j) => `${j.company.trim().split(/\s+/)[0]}|${j.title}`.toLowerCase().replace(/[^a-z0-9א-ת|]/g, '');
 const taken = new Set(jobs.map(sameJob));
-// Drushim comes last: the same opening from the company itself is better.
-// In the workflow Drushim and the company sites ran beside the other parts.
+// Drushim and AllJobs come last: the same opening from the company itself is
+// better. In the workflow they and the company sites ran beside the other parts.
 // (A part that is missing reads as null: its machine failed.)
 const readJsonFile = (p) => readJson(p, null);
 const drushim = process.env.PARTS
   ? await readJsonFile(`${process.env.PARTS}/drushim.json`) || { jobs: previous.jobs.filter((j) => j.id.startsWith('drushim:')), ok: false }
   : await collectDrushim(previous.jobs);
 if (!drushim.ok) failed.push('Drushim: no answer, kept the previous results');
-for (const job of [...careers.jobs, ...linkedin.jobs, ...drushim.jobs]) {
+const alljobs = process.env.PARTS
+  ? await readJsonFile(`${process.env.PARTS}/alljobs.json`) || { jobs: previous.jobs.filter((j) => j.id.startsWith('alljobs:')), ok: false }
+  : await collectAllJobs(previous.jobs);
+if (!alljobs.ok) failed.push('AllJobs: no answer, kept the previous results');
+for (const job of [...careers.jobs, ...linkedin.jobs, ...drushim.jobs, ...alljobs.jobs]) {
   if (taken.has(sameJob(job))) continue;
   taken.add(sameJob(job));
   jobs.push(job);

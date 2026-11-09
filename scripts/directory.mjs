@@ -4,7 +4,7 @@
 // the job boards by its name. A company is added to data/companies.json only
 // if a board with postings in Israel is found; from then on the collector
 // reads it like any other. Companies with nothing found are tried again after
-// RETRY_DAYS. This runs in its own workflow (directory.yml), not every hour.
+// RETRY_DAYS. This runs in its own workflow (directory.yml), not with every collection.
 //
 //   SHARD=i/n node scripts/directory.mjs --out parts/directory-i.json
 //   node scripts/directory.mjs --merge parts

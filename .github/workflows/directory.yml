@@ -1,7 +1,7 @@
 name: Find companies' job boards
 
 # Looks for the job boards of the companies in data/directory.json, which no
-# other list here knows (scripts/directory.mjs). It runs apart from the hourly
+# other list here knows (scripts/directory.mjs). It runs apart from the regular
 # collection, so that stays fast; boards it finds are read from the next run on.
 on:
   workflow_dispatch:
@@ -60,7 +60,7 @@ jobs:
         run: |
           git config user.name "job-radar-bot"
           git config user.email "job-radar-bot@users.noreply.github.com"
-          # The hourly collection commits companies.json too: on a clash, start
+          # The regular collection commits companies.json too: on a clash, start
           # again from its version and add the boards to that.
           for attempt in 1 2 3 4 5; do
             git fetch origin main && git reset --hard origin/main

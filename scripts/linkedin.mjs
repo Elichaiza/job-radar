@@ -51,7 +51,7 @@ const READ_MINUTES = 40;
 const [SHARD, SHARDS] = (process.env.SHARD || '0/1').split('/').map(Number);
 const mine = (list) => list.filter((_, i) => i % SHARDS === SHARD);
 
-// QUICK=1: the hourly run, which searches only the last day's postings and so
+// QUICK=1: the quick run every 20 minutes, which searches only the last day's postings and so
 // takes a few pages per search. Jobs it does not see are kept; the daily full
 // run is the one that drops postings that closed.
 const QUICK = process.env.QUICK === '1';
@@ -98,10 +98,15 @@ async function search(query) {
     if (html == null) return { cards, failed: true };
     const found = parseCards(html);
     cards.push(...found);
-    if (found.length < PAGE_SIZE) break;
+    if (found.length < PAGE_SIZE) return { cards, failed: false };
   }
-  return { cards, failed: false };
+  // Every page was full: there are more results than LinkedIn serves.
+  return { cards, failed: false, capped: true };
 }
+
+// A search with more results than LinkedIn serves is run again once per work
+// type (on-site, remote, hybrid), each of which has fewer.
+const WORK_TYPES = ['1', '2', '3'];
 
 // Everything posted by the Israeli tech companies listed in
 // data/linkedin-companies.json (LinkedIn company ids, from the Israeli Tech Map),
@@ -125,16 +130,22 @@ export async function searchLinkedIn() {
   const deadline = Date.now() + SEARCH_MINUTES * 60000;
   const queries = [...mine(QUERIES), ...await companyQueries()];
   let searched = 0;
-  for (const query of queries) {
+  let split = 0;
+  for (let i = 0; i < queries.length; i++) {
+    const query = queries[i];
     // Out of time: whatever was not searched keeps its previous jobs.
     if (Date.now() > deadline) { failedQueries++; break; }
     const result = await search(query);
     searched++;
     if (result.failed) failedQueries++;
     for (const card of result.cards) cards.set(card.id, card);
+    if (result.capped && !query.f_WT) {
+      split++;
+      queries.splice(i + 1, 0, ...WORK_TYPES.map((f_WT) => ({ ...query, f_WT })));
+    }
     if (blocked) break;
   }
-  console.log(`linkedin search${SHARDS > 1 ? ` ${SHARD + 1}/${SHARDS}` : ''}: ${searched} of ${queries.length} searches, ${cards.size} postings seen${failedQueries ? `, ${failedQueries} queries failed` : ''}`);
+  console.log(`linkedin search${SHARDS > 1 ? ` ${SHARD + 1}/${SHARDS}` : ''}: ${searched} of ${queries.length} searches (${split} split by work type), ${cards.size} postings seen${failedQueries ? `, ${failedQueries} queries failed` : ''}`);
   return { cards: [...cards.values()], failed: failedQueries > 0 };
 }
 
