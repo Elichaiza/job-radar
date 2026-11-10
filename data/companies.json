@@ -1710,6 +1710,11 @@
   "slug": "perionnetworkltd"
  },
  {
+  "name": "Pfizer",
+  "ats": "workday",
+  "slug": "pfizer.wd1/PfizerCareers"
+ },
+ {
   "name": "PhaseV",
   "ats": "greenhouse",
   "slug": "phasev"
