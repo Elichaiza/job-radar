@@ -552,9 +552,13 @@ async function startCv(job) {
     delete cvPending[slug];
     store.set('cvPending', cvPending);
     refreshCvButtons(slug);
-    setSyncNote(err.status === 403 || err.status === 404
-      ? 'לא הצלחתי להפעיל הכנת קו"ח: לטוקן צריך להוסיף הרשאת Actions: Read and write על job-radar-state.'
-      : 'לא הצלחתי להפעיל הכנת קו"ח. נסה שוב בעוד רגע.');
+    const why = {
+      401: 'הטוקן של GitHub פג תוקף או בוטל. צריך ליצור טוקן חדש ולהדביק אותו באתר.',
+      403: 'לטוקן צריך להוסיף הרשאת Actions: Read and write על job-radar-state.',
+      404: 'לטוקן צריך להוסיף הרשאת Actions: Read and write על job-radar-state.',
+      422: 'GitHub דחה את פרטי המשרה (שגיאה 422).',
+    }[err.status] || (err.status ? `GitHub החזיר שגיאה ${err.status}. נסה שוב בעוד רגע.` : 'אין חיבור ל-GitHub. נסה שוב בעוד רגע.');
+    setSyncNote(`לא הצלחתי להפעיל הכנת קו"ח: ${why}`);
   }
 }
 
