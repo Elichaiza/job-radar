@@ -601,6 +601,18 @@ async function openCv(job) {
   let data;
   try { data = await readCvReport(slug); } catch { data = null; }
   if (!data) return body.replaceChildren(el('p', { text: 'לא מצאתי את הקו"ח. אפשר להכין מחדש.' }));
+  if (data.status !== 'ok' && /Could not read the job posting/i.test(data.message || '')) {
+    // The company's site refuses automated reads; the user can paste the text instead.
+    const status = (data.message.match(/HTTP (\d+)/) || [])[1];
+    return body.replaceChildren(
+      el('p', { text: status === '403' || status === '401'
+        ? 'האתר של החברה חוסם קריאה אוטומטית, אז לא הצלחתי לקרוא את המודעה.'
+        : 'לא הצלחתי לקרוא את המודעה מהאתר של החברה (אולי היא כבר הוסרה).' }),
+      el('p', { text: 'אפשר להכין את הקו"ח בכל זאת: פתח את המודעה, העתק את התיאור והדרישות, והדבק אותם.' }),
+      el('div', { class: 'row' },
+        job.url && el('a', { class: 'btn', href: safeUrl(job.url), target: '_blank', rel: 'noopener noreferrer', text: 'פתח את המודעה' }),
+        el('button', { class: 'btn primary', type: 'button', text: 'הדבק תיאור', onclick: () => openPaste(job) })));
+  }
   if (data.status !== 'ok') {
     return body.replaceChildren(
       el('p', { text: 'ההכנה נכשלה:' }),
@@ -687,11 +699,19 @@ function renderPasted() {
 // A title for a posting pasted without one: its first line.
 const firstLine = (text) => (text.split('\n').map((l) => l.trim()).find(Boolean) || 'משרה').slice(0, 90);
 
-$('open-paste').addEventListener('click', () => {
+// From a job whose posting could not be read: the title and company are filled in.
+function openPaste(job) {
+  if ($('cv').open) $('cv').close();
   $('paste-status').hidden = true;
+  if (job) {
+    $('paste-title').value = job.title || '';
+    $('paste-company').value = job.company || '';
+  }
   renderPasted();
   $('paste').showModal();
-});
+  if (job) $('paste-text').focus();
+}
+$('open-paste').addEventListener('click', () => openPaste());
 $('paste-form').addEventListener('submit', (event) => {
   if (event.submitter?.value === 'cancel') return;
   event.preventDefault();
