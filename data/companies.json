@@ -85,6 +85,12 @@
   "slug": "aios"
  },
  {
+  "name": "AIR",
+  "ats": "comeet",
+  "slug": "7B.00A",
+  "token": "B7A5056674AB7A674A44DC44DC226E44DC3962"
+ },
+ {
   "name": "airSlate",
   "ats": "lever",
   "slug": "airslate"
