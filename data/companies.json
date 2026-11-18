@@ -374,6 +374,12 @@
   "token": "46615FE15FED321A6446601A64D322796"
  },
  {
+  "name": "Bounce",
+  "ats": "comeet",
+  "slug": "E9.00C",
+  "token": "9EC45741DC40594C4F6013D81DC413D81DC4"
+ },
+ {
   "name": "BrainPOP",
   "ats": "greenhouse",
   "slug": "brainpop"
@@ -828,6 +834,11 @@
   "slug": "finout"
  },
  {
+  "name": "Fireblocks",
+  "ats": "greenhouse",
+  "slug": "fireblocks"
+ },
+ {
   "name": "First Connect Insurance Services",
   "ats": "greenhouse",
   "slug": "firstconnectinsurance"
@@ -1032,6 +1043,11 @@
   "name": "Huskeys",
   "ats": "ashby",
   "slug": "huskeys"
+ },
+ {
+  "name": "Hypercore",
+  "ats": "ashby",
+  "slug": "hypercore"
  },
  {
   "name": "HyperGuest",
@@ -1619,6 +1635,12 @@
   "token": "63A255C63A63A18E831D063A31D063A1F22"
  },
  {
+  "name": "Onebeat",
+  "ats": "comeet",
+  "slug": "0A.000",
+  "token": "A0046001E001E005A005000460050005A000"
+ },
+ {
   "name": "OneStep",
   "ats": "comeet",
   "slug": "79.007",
@@ -1784,6 +1806,11 @@
   "name": "Pointfive",
   "ats": "ashby",
   "slug": "pointfive"
+ },
+ {
+  "name": "Pontera",
+  "ats": "greenhouse",
+  "slug": "pontera"
  },
  {
   "name": "Primis",
@@ -2153,6 +2180,12 @@
   "slug": "unframe"
  },
  {
+  "name": "SysAid",
+  "ats": "comeet",
+  "slug": "43.00A",
+  "token": "34A107269434A069401D9A10721A50"
+ },
+ {
   "name": "TA9",
   "ats": "smartrecruiters",
   "slug": "ta9"
@@ -2315,6 +2348,12 @@
   "name": "TSMG Holding",
   "ats": "lever",
   "slug": "tsmg"
+ },
+ {
+  "name": "Ultra Information Solutions",
+  "ats": "comeet",
+  "slug": "E3.004",
+  "token": "3E41374F907C81B3C23041F207C813741B3C"
  },
  {
   "name": "Unit",
