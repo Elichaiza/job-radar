@@ -551,6 +551,12 @@
   "slug": "controlup"
  },
  {
+  "name": "Coralogix",
+  "ats": "comeet",
+  "slug": "06.004",
+  "token": "604241801E141E1460430200604604"
+ },
+ {
   "name": "Credible",
   "ats": "greenhouse",
   "slug": "credible"
